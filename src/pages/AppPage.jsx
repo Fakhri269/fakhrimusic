@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import {
   Music2, Search, Home, Heart, ListMusic, LogOut, Play,
   SkipBack, SkipForward, Shuffle, Repeat, Volume2,
-  ChevronRight, Mic2, Radio, TrendingUp, User,
+  ChevronRight, Mic2, Radio, TrendingUp, User, Clock
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
@@ -138,6 +138,7 @@ const AppPage = () => {
             <section className="app-section">
               <h2 className="section-h2">Hasil pencarian "{search}"</h2>
               <div className="song-list">
+                <SongListHeader />
                 {filtered.length === 0
                   ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
                   : filtered.map((song, i) => (
@@ -153,6 +154,7 @@ const AppPage = () => {
             <section className="app-section">
               <h2 className="section-h2">Lagu yang Disukai</h2>
               <div className="song-list">
+                <SongListHeader />
                 {songs.filter(s => isLiked(s.id)).length === 0
                   ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Kamu belum menyukai lagu apapun.</p>
                   : songs.filter(s => isLiked(s.id)).map((song, i) => (
@@ -216,6 +218,7 @@ const AppPage = () => {
                   <button className="see-all">Lihat semua <ChevronRight size={14}/></button>
                 </div>
                 <div className="song-list">
+                  <SongListHeader />
                   {trending.map((song, i) => (
                     <SongRow
                       key={song.id}
@@ -237,6 +240,7 @@ const AppPage = () => {
                   <span style={{ color: 'var(--text-subdued)', fontSize: '0.875rem' }}>{songs.length} lagu</span>
                 </div>
                 <div className="song-list">
+                  <SongListHeader />
                   {songs.map((song, i) => (
                     <SongRow
                       key={song.id}
@@ -331,13 +335,32 @@ const AppPage = () => {
   );
 };
 
+// ── Song List Header Component ──
+const SongListHeader = () => (
+  <div className="song-row song-list-header">
+    <div className="song-row-num">#</div>
+    <div className="song-row-info" style={{ paddingLeft: 16 }}>Judul</div>
+    <div className="song-row-album">Album</div>
+    <div className="song-row-plays">Diputar</div>
+    <div className="song-row-heart"></div>
+    <div className="song-row-duration" style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 8 }}>
+      <Clock size={16} />
+    </div>
+  </div>
+);
+
 // ── Song Row Component ──
 const SongRow = ({ song, index, onPlay, isPlaying, isLiked, onLike }) => (
   <div className={`song-row ${isPlaying ? 'song-row-active' : ''}`} onClick={onPlay}>
     <div className="song-row-num">
       {isPlaying
         ? <span className="song-row-wave"><span/><span/><span/></span>
-        : <span className="song-row-index">{index + 1}</span>
+        : (
+          <>
+            <span className="song-row-index">{index + 1}</span>
+            <span className="song-row-play"><Play size={14} fill="currentColor" /></span>
+          </>
+        )
       }
     </div>
     <img src={song.cover} alt={song.title} className="song-row-cover" />
