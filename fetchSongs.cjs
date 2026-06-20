@@ -27,10 +27,9 @@ async function fetchSongs() {
               artist: track.artistName,
               album: track.collectionName,
               genre: track.primaryGenreName,
-              duration: Math.round(track.trackTimeMillis / 1000), // iTunes gives total track duration, but preview is only 30s. We'll show the real duration in the UI, but the audio element will only play 30s. Let's just use 30 as duration so the progress bar works correctly for the preview.
-              previewDuration: 30, // actually the player plays previewUrl which is 30s long. Let's set duration to 30.
+              duration: Math.floor(Math.random() * (300 - 180 + 1)) + 180, // Random duration between 3:00 and 5:00
               cover: track.artworkUrl100.replace('100x100bb', '300x300bb'),
-              audio: track.previewUrl,
+              audio: "https://www.soundhelix.com/examples/mp3/SoundHelix-Song-" + (Math.floor(Math.random() * 16) + 1) + ".mp3", // Full 5-10 minute royalty-free tracks
               plays: Math.floor(Math.random() * 5000000) + 100000,
               liked: false
             });
@@ -45,10 +44,10 @@ async function fetchSongs() {
   // Shuffle array
   allSongs = allSongs.sort(() => Math.random() - 0.5);
 
-  const fileContent = `// FakhriMusic - Database Lagu (Real previews via iTunes API)
-// All songs provided are 30-second previews.
+  const fileContent = `// FakhriMusic - Database Lagu (Real metadata + Full fake audio for testing)
+// User requested full length audio for testing. Metadata is real from iTunes, but audio is royalty-free.
 
-export const songs = ${JSON.stringify(allSongs, null, 2).replace(/"duration": (\d+),/g, '"duration": 30, // Preview is 30s')}
+export const songs = ${JSON.stringify(allSongs, null, 2)}
 `;
 
   fs.writeFileSync('C:/Users/fakhri sidqi/.gemini/antigravity/scratch/fakhrimusic/src/data/songs.js', fileContent);
