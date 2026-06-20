@@ -77,7 +77,7 @@ const LoginPage = () => {
       setLoading(true);
       setError('');
       await signInWithPopup(auth, googleProvider);
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       console.error(err);
       if (err.code !== 'auth/popup-closed-by-user') {
@@ -96,7 +96,7 @@ const LoginPage = () => {
       setLoading(true);
       setError('');
       await signInWithEmailAndPassword(auth, email, password);
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       console.error(err);
       setError(getFirebaseError(err.code));
@@ -122,7 +122,7 @@ const LoginPage = () => {
       setError('');
       const cred = await createUserWithEmailAndPassword(auth, email, password);
       await updateProfile(cred.user, { displayName: name });
-      navigate('/');
+      navigate('/app');
     } catch (err) {
       console.error(err);
       setError(getFirebaseError(err.code));
