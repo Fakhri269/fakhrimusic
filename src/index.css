@@ -1542,3 +1542,54 @@ img {
     align-items: center;
   }
 }
+
+/* ==========================
+   AUTH TABS (Login / Register)
+========================== */
+
+.auth-tabs {
+  display: flex;
+  background: var(--bg-highlight);
+  border-radius: var(--radius-pill);
+  padding: 4px;
+  margin-bottom: 32px;
+  gap: 4px;
+}
+
+.auth-tab {
+  flex: 1;
+  padding: 10px;
+  border-radius: var(--radius-pill);
+  font-family: var(--font);
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-subdued);
+  background: transparent;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.auth-tab:hover {
+  color: #fff;
+}
+
+.auth-tab-active {
+  background: #fff;
+  color: #000 !important;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+}
+
+/* Disable state for loading buttons */
+.login-btn:disabled,
+.social-btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.login-btn:disabled:hover,
+.social-btn:disabled:hover {
+  transform: none !important;
+  box-shadow: none !important;
+}
