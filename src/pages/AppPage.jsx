@@ -142,7 +142,13 @@ const AppPage = () => {
                 {filtered.length === 0
                   ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
                   : filtered.map((song, i) => (
-                    <SongRow key={song.id} song={song} index={i} onPlay={() => playSong(song, filtered)} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                    <SongRow key={song.id} song={song} index={i} onPlay={() => {
+                      if (currentSong?.id === song.id) {
+                        togglePlay();
+                      } else {
+                        playSong(song, filtered);
+                      }
+                    }} isActive={currentSong?.id === song.id} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
                   ))
                 }
               </div>
@@ -158,7 +164,13 @@ const AppPage = () => {
                 {songs.filter(s => isLiked(s.id)).length === 0
                   ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Kamu belum menyukai lagu apapun.</p>
                   : songs.filter(s => isLiked(s.id)).map((song, i) => (
-                    <SongRow key={song.id} song={song} index={i} onPlay={() => playSong(song, songs.filter(s => isLiked(s.id)))} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                    <SongRow key={song.id} song={song} index={i} onPlay={() => {
+                      if (currentSong?.id === song.id) {
+                        togglePlay();
+                      } else {
+                        playSong(song, songs.filter(s => isLiked(s.id)));
+                      }
+                    }} isActive={currentSong?.id === song.id} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
                   ))
                 }
               </div>
@@ -194,13 +206,16 @@ const AppPage = () => {
                     <div
                       key={song.id}
                       className={`featured-card ${currentSong?.id === song.id ? 'featured-card-active' : ''}`}
-                      onClick={() => playSong(song, featured)}
+                      onClick={() => {
+                        if (currentSong?.id === song.id) togglePlay();
+                        else playSong(song, featured);
+                      }}
                     >
                       <div className="featured-cover">
                         <img src={song.cover} alt={song.title} />
                         <div className="featured-play-overlay">
                           <div className="featured-play-btn">
-                            <Play size={22} fill="currentColor" />
+                            {isPlaying && currentSong?.id === song.id ? <span style={{ fontSize: 20 }}>⏸</span> : <Play size={22} fill="currentColor" />}
                           </div>
                         </div>
                       </div>
@@ -224,7 +239,11 @@ const AppPage = () => {
                       key={song.id}
                       song={song}
                       index={i}
-                      onPlay={() => playSong(song, trending)}
+                      onPlay={() => {
+                        if (currentSong?.id === song.id) togglePlay();
+                        else playSong(song, trending);
+                      }}
+                      isActive={currentSong?.id === song.id}
                       isPlaying={isPlaying && currentSong?.id === song.id}
                       isLiked={isLiked(song.id)}
                       onLike={() => toggleLike(song.id)}
@@ -246,7 +265,11 @@ const AppPage = () => {
                       key={song.id}
                       song={song}
                       index={i}
-                      onPlay={() => playSong(song, songs)}
+                      onPlay={() => {
+                        if (currentSong?.id === song.id) togglePlay();
+                        else playSong(song, songs);
+                      }}
+                      isActive={currentSong?.id === song.id}
                       isPlaying={isPlaying && currentSong?.id === song.id}
                       isLiked={isLiked(song.id)}
                       onLike={() => toggleLike(song.id)}
@@ -350,15 +373,17 @@ const SongListHeader = () => (
 );
 
 // ── Song Row Component ──
-const SongRow = ({ song, index, onPlay, isPlaying, isLiked, onLike }) => (
-  <div className={`song-row ${isPlaying ? 'song-row-active' : ''}`} onClick={onPlay}>
+const SongRow = ({ song, index, onPlay, isActive, isPlaying, isLiked, onLike }) => (
+  <div className={`song-row ${isActive ? 'song-row-active' : ''}`} onClick={onPlay}>
     <div className="song-row-num">
       {isPlaying
         ? <span className="song-row-wave"><span/><span/><span/></span>
         : (
           <>
-            <span className="song-row-index">{index + 1}</span>
-            <span className="song-row-play"><Play size={14} fill="currentColor" /></span>
+            <span className="song-row-index" style={{ color: isActive ? 'var(--accent)' : 'inherit' }}>{index + 1}</span>
+            <span className="song-row-play">
+              {isActive && !isPlaying ? <span style={{ fontSize: 14 }}>▶</span> : <Play size={14} fill="currentColor" />}
+            </span>
           </>
         )
       }
