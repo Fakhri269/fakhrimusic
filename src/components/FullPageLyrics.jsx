@@ -191,8 +191,8 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
                   </div>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
         </div>
 
       </div>
