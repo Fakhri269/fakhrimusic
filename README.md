@@ -18,6 +18,13 @@ A premium, modern web-based music player built with React.js, featuring a stunni
 - Lucide React (Icons)
 - Context API (State Management)
 
+## API Integrations 🔗
+
+This project is powered by several robust APIs working together seamlessly:
+- **YouTube API (via custom middleware):** Handles the core music searching and audio playback stream resolution.
+- **LRCLib API:** Provides highly accurate, time-synced lyrics (`.lrc` format) for the karaoke-style scrolling experience.
+- **Wikipedia REST API:** Automatically fetches high-quality artist photos and short biographies for the "About the Artist" section.
+
 ## How to Run Locally 🚀
 
 1. Clone this repository.
