@@ -136,7 +136,7 @@ export const songs = [
     album: "Untuk Dunia, Cinta, dan Kotornya",
     genre: "Indie Pop",
     duration: 302,
-    cover: "https://i.scdn.co/image/ab67616d0000b273413cb17277c7f3e8b0105dfd",
+    cover: "https://upload.wikimedia.org/wikipedia/id/thumb/5/52/Nadin_Amizah_-_Untuk_Dunia%2C_Cinta%2C_dan_Kotornya.jpg/220px-Nadin_Amizah_-_Untuk_Dunia%2C_Cinta%2C_dan_Kotornya.jpg",
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 120000000,
     liked: false,

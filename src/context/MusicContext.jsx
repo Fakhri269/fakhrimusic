@@ -140,22 +140,52 @@ export const MusicProvider = ({ children }) => {
         finalYoutubeId = localMatch.youtubeId;
         songToPlay.youtubeId = finalYoutubeId;
       } else {
-        // 2. Fetch from YouTube using allorigins proxy and extract the first video ID
+        // 2. Fetch from YouTube using proxy with 5s timeout
         try {
           const query = encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio');
-          const proxyUrl = `https://api.allorigins.win/raw?url=https://m.youtube.com/results?search_query=${query}`;
-          const res = await fetch(proxyUrl);
-          if (res.ok) {
-            const html = await res.text();
-            // Match the first YouTube video ID
-            const match = html.match(/watch\?v=([a-zA-Z0-9_-]{11})/);
-            if (match && match[1]) {
-              finalYoutubeId = match[1];
-              songToPlay.youtubeId = finalYoutubeId;
+
+          // Race: proxy vs 5 second timeout
+          const fetchWithTimeout = (url, ms) => {
+            const controller = new AbortController();
+            const id = setTimeout(() => controller.abort(), ms);
+            return fetch(url, { signal: controller.signal }).finally(() => clearTimeout(id));
+          };
+
+          // Try Piped API first (faster, JSON response)
+          let found = false;
+          const pipedInstances = [
+            'https://pipedapi.tokhmi.xyz',
+            'https://piapi.ggtyler.dev',
+          ];
+          for (const instance of pipedInstances) {
+            try {
+              const res = await fetchWithTimeout(`${instance}/search?q=${query}&filter=all`, 4000);
+              if (res.ok) {
+                const data = await res.json();
+                const item = data?.items?.find(i => i.type === 'stream' || i.url?.includes('/watch'));
+                if (item?.url) {
+                  const m = item.url.match(/v=([a-zA-Z0-9_-]{11})/);
+                  if (m) { finalYoutubeId = m[1]; songToPlay.youtubeId = finalYoutubeId; found = true; break; }
+                }
+              }
+            } catch (_) { /* try next */ }
+          }
+
+          // Fallback: allorigins scrape
+          if (!found) {
+            const proxyUrl = `https://api.allorigins.win/raw?url=https://m.youtube.com/results?search_query=${query}`;
+            const res = await fetchWithTimeout(proxyUrl, 5000);
+            if (res.ok) {
+              const html = await res.text();
+              const match = html.match(/watch\?v=([a-zA-Z0-9_-]{11})/);
+              if (match && match[1]) {
+                finalYoutubeId = match[1];
+                songToPlay.youtubeId = finalYoutubeId;
+              }
             }
           }
         } catch (err) {
-          console.warn("YouTube search proxy failed.");
+          console.warn("YouTube search proxy failed:", err.name);
         }
       }
     }

@@ -135,7 +135,7 @@ const AppPage = () => {
         .then(data => {
           if (data && data.results) {
             const mapped = data.results.map(t => ({
-              id: t.trackId.toString(),
+              id: `itunes_${t.trackId}`,
               title: t.trackName,
               artist: t.artistName,
               album: t.collectionName,
@@ -267,9 +267,9 @@ const AppPage = () => {
               ) : searchResults.length > 0 ? (
                  searchResults.map((song, i) => (
                    <SongRow key={song.id} song={song} index={i}
-                     onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, searchResults)}
-                     isActive={currentSong?.id === song.id}
-                     isPlaying={isPlaying && currentSong?.id === song.id}
+                     onPlay={() => String(currentSong?.id) === String(song.id) ? togglePlay() : playSong(song, searchResults)}
+                     isActive={String(currentSong?.id) === String(song.id)}
+                     isPlaying={isPlaying && String(currentSong?.id) === String(song.id)}
                      isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
                  ))
               ) : (
