@@ -120,6 +120,36 @@ export const MusicProvider = ({ children }) => {
     }
   }, [volume, isMuted, isPlayerReady]);
 
+  const loadAndPlayYoutubeVideo = async (songToPlay) => {
+    if (!isPlayerReady || !playerRef.current) return;
+    
+    setCurrentSong(songToPlay);
+    setIsPlaying(false); // Pause while loading
+    
+    let finalYoutubeId = songToPlay.youtubeId;
+    if (!finalYoutubeId) {
+      try {
+        const res = await fetch(`/api/yt-search?q=${encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio')}`);
+        const data = await res.json();
+        if (data && data.length > 0) {
+          finalYoutubeId = data[0].videoId;
+          songToPlay.youtubeId = finalYoutubeId;
+        }
+      } catch (err) {
+        console.error("Failed to fetch youtubeId", err);
+      }
+    }
+
+    if (finalYoutubeId && playerRef.current) {
+      playerRef.current.loadVideoById({
+        videoId: finalYoutubeId,
+        startSeconds: songToPlay.startSeconds || 0
+      });
+      playerRef.current.playVideo();
+      setIsPlaying(true);
+    }
+  };
+
   const playSong = useCallback(
     (song, playlist = null) => {
       if (!isPlayerReady) return;
@@ -134,13 +164,8 @@ export const MusicProvider = ({ children }) => {
           setQueueIndex(0);
         }
       }
-      setCurrentSong(song);
-      playerRef.current.loadVideoById({
-        videoId: song.youtubeId,
-        startSeconds: song.startSeconds || 0
-      });
-      playerRef.current.playVideo();
-      setIsPlaying(true);
+      
+      loadAndPlayYoutubeVideo(song);
     },
     [queue, isPlayerReady]
   );
@@ -182,12 +207,7 @@ export const MusicProvider = ({ children }) => {
 
     const nextSong = queue[nextIndex];
     setQueueIndex(nextIndex);
-    setCurrentSong(nextSong);
-    playerRef.current.loadVideoById({
-      videoId: nextSong.youtubeId,
-      startSeconds: nextSong.startSeconds || 0
-    });
-    playerRef.current.playVideo();
+    loadAndPlayYoutubeVideo(nextSong);
   }, [queue, queueIndex, isShuffled, repeatMode, isPlayerReady]);
 
   // Update ref so YT events use the latest function
@@ -206,12 +226,7 @@ export const MusicProvider = ({ children }) => {
     const prevIndex = (queueIndex - 1 + queue.length) % queue.length;
     const prevSong = queue[prevIndex];
     setQueueIndex(prevIndex);
-    setCurrentSong(prevSong);
-    playerRef.current.loadVideoById({
-      videoId: prevSong.youtubeId,
-      startSeconds: prevSong.startSeconds || 0
-    });
-    playerRef.current.playVideo();
+    loadAndPlayYoutubeVideo(prevSong);
   }, [queue, queueIndex, isPlayerReady]);
 
   const seekTo = useCallback((time) => {

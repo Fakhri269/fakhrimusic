@@ -1,6 +1,13 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
+
+function fmt(s) {
+  if (isNaN(s)) return "0:00";
+  const m = Math.floor(s / 60);
+  const sc = Math.floor(s % 60).toString().padStart(2, '0');
+  return `${m}:${sc}`;
+}
 
 function parseLRC(lrcText) {
   if (!lrcText) return [];
@@ -17,7 +24,10 @@ function parseLRC(lrcText) {
 }
 
 const FullPageLyrics = ({ currentSong, onClose }) => {
-  const { currentTime } = useMusic();
+  const { 
+    currentTime, duration, isPlaying, togglePlay, handleNext, handlePrev, 
+    seekTo, isShuffled, toggleShuffle, repeatMode, toggleRepeat 
+  } = useMusic();
   const [lyricsData, setLyricsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeLine, setActiveLine] = useState(0);
@@ -72,51 +82,83 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
       <div className="sp-fpl-bg" style={{ backgroundImage: `url(${currentSong.cover})` }} />
       <div className="sp-fpl-overlay" />
 
-      {/* Topbar */}
-      <div className="sp-fpl-topbar">
-        <div className="sp-fpl-topbar-info">
-          <img src={currentSong.cover} alt="" className="sp-fpl-mini-cover" />
-          <div>
-            <div className="sp-fpl-topbar-title">{currentSong.title}</div>
-            <div className="sp-fpl-topbar-artist">{currentSong.artist}</div>
-          </div>
-        </div>
-        <button className="sp-fpl-close" onClick={onClose}>
-          <ChevronDown size={24} />
-        </button>
-      </div>
-
-      <div className="sp-fpl-body">
-        {/* Left: album + info */}
-        <div className="sp-fpl-left">
-          <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-album" />
-          <div className="sp-fpl-track-info">
-            <div className="sp-fpl-track-title">{currentSong.title}</div>
-            <div className="sp-fpl-track-artist">{currentSong.artist}</div>
-          </div>
+      <div className="sp-fpl-wrapper">
+        {/* 1. Topbar */}
+        <div className="sp-fpl-topbar">
+          <button className="sp-fpl-close-btn" onClick={onClose}>
+            <ChevronDown size={28} />
+          </button>
+          <div className="sp-fpl-top-text">PLAYING FROM SEARCH</div>
+          <div style={{ width: 28 }} />
         </div>
 
-        {/* Right: synced lyrics */}
-        <div className="sp-fpl-right">
-          <div className="sp-fpl-lyrics-label">Lyrics</div>
-          {loading ? (
-            <div className="sp-fpl-loading">Memuat lirik...</div>
-          ) : lyricsData.length === 0 ? (
-            <div className="sp-fpl-loading">Lirik tidak ditemukan untuk lagu ini.</div>
-          ) : (
-            <div className="sp-fpl-lines">
-              {lyricsData.map((line, i) => (
-                <div
-                  key={i}
-                  ref={i === activeLine ? activeRef : null}
-                  className={`sp-fpl-line ${i === activeLine ? 'active' : ''}`}
-                >
-                  {line.text}
-                </div>
-              ))}
+        {/* 2. Cover Art (Mobile Only) */}
+        <div className="sp-fpl-cover-area">
+          <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-cover-img" />
+        </div>
+
+        {/* 3. Info Area (Mobile Only) */}
+        <div className="sp-fpl-info-area">
+          <div className="sp-fpl-meta">
+            <div className="sp-fpl-title">{currentSong.title}</div>
+            <div className="sp-fpl-artist">{currentSong.artist}</div>
+          </div>
+        </div>
+
+        {/* 4. Controls Area (Mobile Only, above lyrics) */}
+        <div className="sp-fpl-controls-area">
+          <div className="sp-progress">
+            <span className="sp-time">{fmt(currentTime)}</span>
+            <div className="sp-progress-track"
+              onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
+              <div className="sp-progress-fill" style={{ width: `${(currentTime / duration) * 100 || 0}%` }} />
             </div>
-          )}
+            <span className="sp-time">{fmt(duration)}</span>
+          </div>
+          
+          <div className="sp-fpl-mobile-btns">
+            <button className={`sp-ctrl ${isShuffled ? 'active' : ''}`} onClick={toggleShuffle}>
+              <Shuffle size={24} />
+            </button>
+            <button className="sp-ctrl" onClick={handlePrev}><SkipBack size={32} fill="currentColor" /></button>
+            <button className="sp-ctrl sp-ctrl-play" style={{ width: 64, height: 64, backgroundColor: '#fff', color: '#000', borderRadius: '50%' }} onClick={togglePlay}>
+              {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: 4 }} />}
+            </button>
+            <button className="sp-ctrl" onClick={handleNext}><SkipForward size={32} fill="currentColor" /></button>
+            <button className={`sp-ctrl ${repeatMode !== 'none' ? 'active' : ''}`} onClick={toggleRepeat}>
+              <Repeat size={24} />
+              {repeatMode === 'one' && (
+                <span style={{ position: 'absolute', bottom: -4, right: -2, fontSize: '0.65rem', fontWeight: 900, color: 'var(--sp-green)' }}>1</span>
+              )}
+            </button>
+          </div>
         </div>
+
+        {/* 5. Lyrics Area */}
+        <div className="sp-fpl-lyrics-area">
+          <div className="sp-fpl-lyrics-header">Lyrics</div>
+          <div className="sp-fpl-lyrics-scroll">
+            {loading ? (
+              <div className="sp-fpl-loading">Memuat lirik...</div>
+            ) : lyricsData.length === 0 ? (
+              <div className="sp-fpl-loading">Lirik tidak ditemukan.</div>
+            ) : (
+              <div className="sp-fpl-lines">
+                {lyricsData.map((line, i) => (
+                  <div
+                    key={i}
+                    ref={i === activeLine ? activeRef : null}
+                    className={`sp-fpl-line ${i === activeLine ? 'active' : ''}`}
+                    onClick={() => seekTo(line.time)}
+                  >
+                    {line.text}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
       </div>
     </div>
   );

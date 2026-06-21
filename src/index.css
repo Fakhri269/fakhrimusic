@@ -731,97 +731,81 @@ img    { display: block; }
   z-index: 1;
 }
 
-.sp-fpl-topbar {
+/* --- FPL Layout base (Desktop) --- */
+.sp-fpl-wrapper {
   position: relative;
   z-index: 2;
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  height: 100%;
+  padding: 0 48px;
+}
+
+.sp-fpl-topbar {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 16px 24px;
-  background: rgba(0,0,0,0.2);
+  padding: 24px 0;
 }
-.sp-fpl-topbar-info { display: flex; align-items: center; gap: 12px; }
-.sp-fpl-mini-cover { width: 40px; height: 40px; border-radius: 4px; object-fit: cover; }
-.sp-fpl-topbar-title { font-size: 0.9rem; font-weight: 700; }
-.sp-fpl-topbar-artist { font-size: 0.8rem; color: var(--sp-text); }
-.sp-fpl-close {
+.sp-fpl-close-btn {
   color: rgba(255,255,255,0.7);
-  transition: color 0.15s;
-  padding: 8px;
+  transition: color 0.2s;
 }
-.sp-fpl-close:hover { color: #fff; }
+.sp-fpl-close-btn:hover { color: #fff; }
+.sp-fpl-top-text { display: none; }
 
-.sp-fpl-body {
-  position: relative;
-  z-index: 2;
+/* Hide mobile areas on desktop */
+.sp-fpl-cover-area, .sp-fpl-info-area, .sp-fpl-controls-area {
+  display: none;
+}
+
+.sp-fpl-lyrics-area {
   flex: 1;
   display: flex;
-  overflow: hidden;
-  padding: 24px;
-  gap: 48px;
-}
-
-.sp-fpl-left {
-  width: 340px;
-  flex-shrink: 0;
-  display: flex;
   flex-direction: column;
-  gap: 20px;
+  overflow: hidden;
 }
-.sp-fpl-album {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: 12px;
-  object-fit: cover;
-  box-shadow: 0 16px 48px rgba(0,0,0,0.7);
-}
-.sp-fpl-track-info { }
-.sp-fpl-track-title { font-size: 1.4rem; font-weight: 800; margin-bottom: 4px; }
-.sp-fpl-track-artist { font-size: 1rem; color: var(--sp-text); }
 
-.sp-fpl-right {
+.sp-fpl-lyrics-header { display: none; }
+
+.sp-fpl-lyrics-scroll {
   flex: 1;
   overflow-y: auto;
-  display: flex;
-  flex-direction: column;
+  padding-bottom: 30vh;
+  padding-top: 10vh;
+  scrollbar-width: none;
 }
-.sp-fpl-right::-webkit-scrollbar { width: 0; }
-
-.sp-fpl-lyrics-label {
-  font-size: 0.75rem;
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  color: rgba(255,255,255,0.5);
-  margin-bottom: 24px;
-}
-
-.sp-fpl-loading {
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: rgba(255,255,255,0.4);
-}
+.sp-fpl-lyrics-scroll::-webkit-scrollbar { display: none; }
 
 .sp-fpl-lines {
   display: flex;
   flex-direction: column;
-  gap: 12px;
-  padding-bottom: 200px;
+  gap: 16px;
+}
+
+.sp-fpl-loading {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: rgba(255,255,255,0.4);
 }
 
 .sp-fpl-line {
-  font-size: 2rem;
+  font-size: 3.5rem;
   font-weight: 800;
-  line-height: 1.4;
-  color: rgba(255,255,255,0.3);
+  line-height: 1.3;
+  color: #000;
+  opacity: 0.5;
   cursor: pointer;
-  transition: color 0.3s ease, font-size 0.3s ease;
+  transition: color 0.3s ease, font-size 0.3s ease, opacity 0.3s ease;
   letter-spacing: -0.02em;
+  transform-origin: left center;
 }
-.sp-fpl-line:hover { color: rgba(255,255,255,0.6); }
+.sp-fpl-line:hover { opacity: 0.8; }
 .sp-fpl-line.active {
   color: #fff;
-  font-size: 2.2rem;
+  opacity: 1;
+  font-size: 3.8rem;
 }
 
 /* ───────────────────────────────────────────
@@ -1055,8 +1039,22 @@ img    { display: block; }
     background: var(--sp-dark);
   }
 
-  .sp-hero { padding: 16px 16px 8px; }
-  .sp-hero-title { font-size: 1.4rem; }
+  .sp-hero { padding: 16px; }
+  .sp-hero-info {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 16px;
+  }
+  .sp-hero-img {
+    width: 180px;
+    height: 180px;
+  }
+  .sp-hero-title { 
+    font-size: 2rem; 
+    white-space: normal; 
+    line-height: 1.2;
+  }
   .sp-quick-grid { grid-template-columns: 1fr 1fr; gap: 8px; }
 
   .sp-section { padding: 0 16px 24px; }
@@ -1093,11 +1091,16 @@ img    { display: block; }
   .sp-player-mini {
     display: flex;
     align-items: center;
-    padding: 10px 16px;
-    gap: 12px;
+    padding: 6px 12px;
+    gap: 10px;
     width: 100%;
     background: #181818;
     backdrop-filter: blur(20px);
+    cursor: pointer;
+  }
+  .sp-player-cover {
+    width: 40px;
+    height: 40px;
   }
   .sp-player-track { display: none; }
   .sp-player-center { display: none; }
@@ -1107,7 +1110,7 @@ img    { display: block; }
     display: flex;
     justify-content: space-around;
     align-items: center;
-    padding: 8px 0 20px;
+    padding: 6px 0 8px;
     background: #0a0a0a;
     border-top: 1px solid rgba(255,255,255,0.06);
   }
@@ -1124,20 +1127,117 @@ img    { display: block; }
   }
   .sp-mobile-nav-btn.active { color: #fff; }
 
-  /* Full screen lyrics on mobile */
-  .sp-fpl-body { flex-direction: column; padding: 16px; gap: 16px; }
-  .sp-fpl-left { width: 100%; flex-direction: row; align-items: center; gap: 12px; }
-  .sp-fpl-album { width: 72px; aspect-ratio: 1; }
-  .sp-fpl-track-title { font-size: 1rem; }
-  .sp-fpl-track-artist { font-size: 0.875rem; }
-  .sp-fpl-line { font-size: 1.4rem; }
-  .sp-fpl-line.active { font-size: 1.6rem; }
+  /* Full screen lyrics / Mobile Player View */
+  .sp-fpl-body { flex-direction: column; padding: 16px 0 0; gap: 0; }
+  .sp-fpl-left { 
+    width: 100%; 
+    flex-direction: column; 
+    align-items: center; 
+    gap: 24px; 
+    padding: 0 24px;
+  }
+  .sp-fpl-album { width: 85%; max-width: 320px; aspect-ratio: 1; border-radius: 8px; box-shadow: 0 8px 32px rgba(0,0,0,0.6); }
+  .sp-fpl-track-info { width: 100%; text-align: left; }
+  .sp-fpl-track-title { font-size: 1.5rem; margin-bottom: 4px; }
+  .sp-fpl-track-artist { font-size: 1rem; }
+  
+  .sp-fpl-right { flex: 1; padding: 24px; margin-top: 16px; background: rgba(0,0,0,0.3); border-radius: 16px 16px 0 0; }
+  /* ── MOBILE FULL PAGE LYRICS (Now Playing View) ── */
+  .sp-fpl-wrapper {
+    padding: 16px 24px;
+    gap: 20px;
+  }
+  .sp-fpl-topbar {
+    padding: 0;
+  }
+  .sp-fpl-top-text {
+    display: block;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    color: #fff;
+  }
+  
+  .sp-fpl-cover-area {
+    display: flex;
+    justify-content: center;
+    width: 100%;
+    margin-top: 10px;
+  }
+  .sp-fpl-cover-img {
+    width: 100%;
+    max-width: 350px;
+    aspect-ratio: 1;
+    border-radius: 8px;
+    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    object-fit: cover;
+  }
+
+  .sp-fpl-info-area {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+  }
+  .sp-fpl-title { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
+  .sp-fpl-artist { font-size: 1rem; color: rgba(255,255,255,0.7); }
+
+  .sp-fpl-controls-area {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    width: 100%;
+  }
+  .sp-fpl-mobile-btns {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+  }
+
+  /* Mobile Lyrics Card */
+  .sp-fpl-lyrics-area {
+    background: rgba(0,0,0,0.4);
+    border-radius: 12px;
+    padding: 16px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    min-height: 200px;
+  }
+  .sp-fpl-lyrics-header {
+    display: block;
+    font-size: 0.9rem;
+    font-weight: 800;
+    color: #fff;
+    margin-bottom: 12px;
+  }
+  .sp-fpl-lyrics-scroll {
+    padding-top: 0;
+    padding-bottom: 40px;
+  }
+  .sp-fpl-lines {
+    gap: 10px;
+  }
+  .sp-fpl-line {
+    font-size: 1.5rem;
+    color: #000;
+    opacity: 0.6;
+  }
+  .sp-fpl-line.active {
+    font-size: 1.6rem;
+    color: #fff;
+    opacity: 1;
+  }
+
+  .sp-fpl-mobile-controls { display: none; }
 }
 
 @media (min-width: 769px) {
   .sp-player-mini { display: none; }
   .sp-mobile-progress-bar { display: none; }
   .sp-mobile-bottom-nav { display: none; }
+  .sp-fpl-mobile-controls { display: none; }
 }
 
 /* tablet */

@@ -115,15 +115,44 @@ const AppPage = () => {
 
   const [activeNav, setActiveNav] = useState('home');
   const [search, setSearch] = useState('');
+  const [searchResults, setSearchResults] = useState([]);
+  const [isSearching, setIsSearching] = useState(false);
   const [isNowPlayingOpen, setIsNowPlayingOpen] = useState(false);
   const [isLyricsOpen, setIsLyricsOpen] = useState(false);
 
   const handleLogout = async () => { await logout(); navigate('/'); };
 
-  const filtered = songs.filter(s =>
-    s.title.toLowerCase().includes(search.toLowerCase()) ||
-    s.artist.toLowerCase().includes(search.toLowerCase())
-  );
+  React.useEffect(() => {
+    if (!search.trim()) {
+      setSearchResults([]);
+      return;
+    }
+    const timer = setTimeout(() => {
+      setIsSearching(true);
+      fetch(`https://itunes.apple.com/search?term=${encodeURIComponent(search)}&entity=song&limit=20`)
+        .then(r => r.json())
+        .then(data => {
+          if (data && data.results) {
+            const mapped = data.results.map(t => ({
+              id: t.trackId.toString(),
+              title: t.trackName,
+              artist: t.artistName,
+              album: t.collectionName,
+              cover: t.artworkUrl100.replace('100x100bb', '500x500bb'),
+              duration: Math.floor(t.trackTimeMillis / 1000) || 180,
+              youtubeId: null,
+              startSeconds: 0,
+              plays: Math.floor(Math.random() * 5000000) + 100000,
+              genre: t.primaryGenreName,
+            }));
+            setSearchResults(mapped);
+          }
+          setIsSearching(false);
+        })
+        .catch(() => setIsSearching(false));
+    }, 500);
+    return () => clearTimeout(timer);
+  }, [search]);
   const featured  = songs.slice(0, 6);
   const trending  = [...songs].sort((a, b) => b.plays - a.plays).slice(0, 6);
   const likedList = songs.filter(s => isLiked(s.id));
@@ -227,19 +256,24 @@ const AppPage = () => {
           {activeNav === 'search' && (
             <section className="sp-section">
               <h2 className="sp-section-title" style={{ marginBottom: 16 }}>
-                Hasil untuk "{search}"
+                {search ? `Hasil untuk "${search}"` : 'Pencarian'}
               </h2>
               <SongHeader />
-              {filtered.length === 0
-                ? <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
-                : filtered.map((song, i) => (
-                  <SongRow key={song.id} song={song} index={i}
-                    onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, filtered)}
-                    isActive={currentSong?.id === song.id}
-                    isPlaying={isPlaying && currentSong?.id === song.id}
-                    isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
-                ))
-              }
+              {isSearching ? (
+                 <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Mencari lagu...</p>
+              ) : searchResults.length === 0 && search.trim() ? (
+                 <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
+              ) : searchResults.length > 0 ? (
+                 searchResults.map((song, i) => (
+                   <SongRow key={song.id} song={song} index={i}
+                     onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, searchResults)}
+                     isActive={currentSong?.id === song.id}
+                     isPlaying={isPlaying && currentSong?.id === song.id}
+                     isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                 ))
+              ) : (
+                 <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Ketik judul atau nama artis untuk mulai mencari jutaan lagu!</p>
+              )}
             </section>
           )}
 
@@ -364,16 +398,16 @@ const AppPage = () => {
             onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
             <div className="sp-mobile-progress-fill" style={{ width: `${pct}%` }} />
           </div>
-          <div className="sp-player-mini">
+          <div className="sp-player-mini" onClick={() => setIsLyricsOpen(true)}>
             <img src={currentSong.cover} className="sp-player-cover" alt="" />
             <div className="sp-player-meta">
               <div className="sp-player-title">{currentSong.title}</div>
               <div className="sp-player-artist">{currentSong.artist}</div>
             </div>
-            <button className="sp-ctrl-play sp-ctrl" style={{ width: 32, height: 32 }} onClick={togglePlay}>
+            <button className="sp-ctrl-play sp-ctrl" style={{ width: 32, height: 32 }} onClick={e => { e.stopPropagation(); togglePlay(); }}>
               {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
             </button>
-            <button className="sp-ctrl" onClick={handleNext}><SkipForward size={20} /></button>
+            <button className="sp-ctrl" onClick={e => { e.stopPropagation(); handleNext(); }}><SkipForward size={20} /></button>
           </div>
 
           {/* Left: track info (desktop) */}
