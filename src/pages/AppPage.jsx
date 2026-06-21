@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
-  Music2, Search, Home, Heart, ListMusic, LogOut, Play,
+  Music2, Search, Home, Heart, ListMusic, LogOut, Play, Pause,
   SkipBack, SkipForward, Shuffle, Repeat, Volume2,
   ChevronRight, Mic2, Radio, TrendingUp, User, Clock
 } from 'lucide-react';
@@ -306,7 +306,30 @@ const AppPage = () => {
       {/* ── PLAYER BAR ── */}
       {currentSong && (
         <div className="player-bar">
-          {/* Track info */}
+          {/* Mobile: thin progress bar strip */}
+          <div className="mobile-progress">
+            <div
+              className="mobile-progress-fill"
+              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
+            />
+          </div>
+
+          {/* Mobile: mini strip with cover + play button */}
+          <div className="player-mini-strip">
+            <img src={currentSong.cover} alt={currentSong.title} className="player-bar-cover" />
+            <div className="player-bar-meta">
+              <div className="player-bar-title">{currentSong.title}</div>
+              <div className="player-bar-artist">{currentSong.artist}</div>
+            </div>
+            <button className="bar-ctrl-play" onClick={togglePlay}>
+              {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+            </button>
+            <button className="bar-ctrl" onClick={handleNext} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
+              <SkipForward size={20} />
+            </button>
+          </div>
+
+          {/* Track info (desktop) */}
           <div 
             className="player-bar-track" 
             onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
@@ -325,7 +348,7 @@ const AppPage = () => {
             </button>
           </div>
 
-          {/* Controls */}
+          {/* Controls (desktop) */}
           <div className="player-bar-center">
             <div className="player-bar-controls">
               <button
@@ -335,7 +358,7 @@ const AppPage = () => {
               <button className="bar-ctrl" onClick={handlePrev}><SkipBack size={18}/></button>
               <button className="bar-ctrl-play" onClick={togglePlay}>
                 {isPlaying
-                  ? <span style={{ fontSize: 22, lineHeight: 1 }}>⏸</span>
+                  ? <Pause size={20} fill="currentColor" />
                   : <Play size={20} fill="currentColor" />
                 }
               </button>
@@ -366,7 +389,7 @@ const AppPage = () => {
             </div>
           </div>
 
-          {/* Volume */}
+          {/* Volume (desktop) */}
           <div className="player-bar-volume">
             <Mic2 
               size={18} 
@@ -385,6 +408,38 @@ const AppPage = () => {
           </div>
         </div>
       )}
+
+      {/* ── MOBILE BOTTOM NAV ── */}
+      <nav className="mobile-bottom-nav">
+        <button
+          className={`mobile-nav-btn ${activeNav === 'home' ? 'active' : ''}`}
+          onClick={() => setActiveNav('home')}
+        >
+          <Home size={22} />
+          <span>Beranda</span>
+        </button>
+        <button
+          className={`mobile-nav-btn ${activeNav === 'search' ? 'active' : ''}`}
+          onClick={() => setActiveNav('search')}
+        >
+          <Search size={22} />
+          <span>Cari</span>
+        </button>
+        <button
+          className={`mobile-nav-btn ${activeNav === 'liked' ? 'active' : ''}`}
+          onClick={() => setActiveNav('liked')}
+        >
+          <Heart size={22} />
+          <span>Disukai</span>
+        </button>
+        <button
+          className={`mobile-nav-btn ${activeNav === 'playlist' ? 'active' : ''}`}
+          onClick={() => setActiveNav('playlist')}
+        >
+          <ListMusic size={22} />
+          <span>Playlist</span>
+        </button>
+      </nav>
     </div>
   );
 };

@@ -2587,3 +2587,311 @@ img {
     display: none;
   }
 }
+
+/* ============================================================
+   MOBILE — Premium Responsive Layout
+   ============================================================ */
+
+@media (max-width: 768px) {
+  /* Hide sidebar, collapse to bottom nav */
+  .app-layout {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto auto;
+  }
+
+  .sidebar {
+    display: none;
+  }
+
+  .right-sidebar {
+    display: none;
+  }
+
+  .app-main {
+    margin: 0;
+    border-radius: 0;
+    grid-row: 1 / 2;
+  }
+
+  /* ---- Mobile Top Bar ---- */
+  .app-topbar {
+    padding: 16px;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: rgba(18, 18, 18, 0.92);
+    backdrop-filter: blur(12px);
+  }
+
+  .app-topbar-title {
+    font-size: 1.4rem;
+  }
+
+  /* ---- Featured Grid ---- */
+  .featured-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .featured-card {
+    flex-direction: column;
+    align-items: flex-start;
+    padding: 0;
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .featured-cover {
+    width: 100%;
+    height: 120px;
+    flex-shrink: 0;
+  }
+
+  .featured-card-title {
+    padding: 8px 12px;
+    font-size: 0.85rem;
+    font-weight: 700;
+  }
+
+  /* ---- Song Row Mobile ---- */
+  .song-row {
+    grid-template-columns: 48px 1fr 40px;
+    padding: 8px 12px;
+    gap: 0;
+  }
+
+  .song-row-album,
+  .song-row-plays,
+  .song-list-header .song-row-album,
+  .song-list-header .song-row-plays {
+    display: none;
+  }
+
+  .song-row-cover {
+    width: 40px;
+    height: 40px;
+  }
+
+  .song-row-title {
+    font-size: 0.875rem;
+  }
+
+  .song-row-artist {
+    font-size: 0.75rem;
+  }
+
+  /* ---- Player Bar Mobile (Mini) ---- */
+  .player-bar {
+    padding: 0;
+    flex-direction: column;
+    background: #111;
+    border-top: none;
+    z-index: 200;
+  }
+
+  /* Mini player strip at top of bar */
+  .player-mini-strip {
+    display: flex;
+    align-items: center;
+    padding: 10px 16px;
+    gap: 12px;
+    background: rgba(30,30,30,0.98);
+    backdrop-filter: blur(20px);
+    border-top: 1px solid rgba(255,255,255,0.08);
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .player-bar-track {
+    flex: 1;
+    min-width: 0;
+    width: auto;
+  }
+
+  .player-bar-cover {
+    width: 44px;
+    height: 44px;
+    border-radius: 6px;
+    flex-shrink: 0;
+  }
+
+  .player-bar-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .player-bar-title {
+    font-size: 0.875rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .player-bar-artist {
+    font-size: 0.75rem;
+  }
+
+  .player-bar-center {
+    display: none;
+  }
+
+  .player-bar-volume {
+    display: none;
+  }
+
+  /* Progress bar below mini strip */
+  .mobile-progress {
+    width: 100%;
+    height: 2px;
+    background: rgba(255,255,255,0.1);
+    cursor: pointer;
+  }
+
+  .mobile-progress-fill {
+    height: 100%;
+    background: var(--accent);
+    transition: width 0.1s linear;
+  }
+
+  /* Bottom Nav */
+  .mobile-bottom-nav {
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    padding: 10px 0 20px;
+    background: #111;
+    border-top: 1px solid rgba(255,255,255,0.06);
+  }
+
+  .mobile-nav-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    background: none;
+    border: none;
+    color: var(--text-subdued);
+    font-size: 0.65rem;
+    font-weight: 600;
+    cursor: pointer;
+    padding: 4px 16px;
+    transition: color 0.2s ease;
+  }
+
+  .mobile-nav-btn.active {
+    color: #fff;
+  }
+
+  .mobile-nav-btn svg {
+    transition: transform 0.2s ease;
+  }
+
+  .mobile-nav-btn:hover svg {
+    transform: scale(1.15);
+  }
+
+  /* ---- Full Page Lyrics Mobile ---- */
+  .full-page-lyrics {
+    bottom: 0;
+  }
+
+  .fpl-content {
+    flex-direction: column;
+    padding: 20px 16px;
+    gap: 24px;
+  }
+
+  .fpl-left {
+    flex-direction: row;
+    align-items: center;
+    gap: 16px;
+  }
+
+  .fpl-cover {
+    width: 80px;
+    height: 80px;
+    border-radius: 8px;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.5);
+  }
+
+  .fpl-right {
+    flex: 1;
+    overflow-y: auto;
+  }
+
+  .fpl-line {
+    font-size: 1.6rem;
+  }
+
+  .fpl-line.active {
+    font-size: 1.8rem;
+  }
+
+  /* ---- Section titles ---- */
+  .section-title {
+    font-size: 1.2rem;
+    padding: 0 12px;
+  }
+
+  /* ---- Scroll padding ---- */
+  .app-main-scroll {
+    padding-bottom: 8px;
+  }
+}
+
+/* Tablet */
+@media (min-width: 769px) and (max-width: 1024px) {
+  .app-layout {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .right-sidebar {
+    display: none;
+  }
+
+  .app-layout {
+    grid-template-columns: 200px 1fr;
+  }
+
+  .featured-grid {
+    grid-template-columns: repeat(3, 1fr);
+  }
+
+  .fpl-cover {
+    width: 260px;
+    height: 260px;
+  }
+
+  .fpl-line {
+    font-size: 1.8rem;
+  }
+
+  .fpl-line.active {
+    font-size: 2rem;
+  }
+}
+
+/* Utility: hide on mobile */
+.fpl-lyrics-label {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: rgba(255,255,255,0.6);
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+
+.fpl-loading {
+  color: rgba(255,255,255,0.5);
+  font-size: 1.2rem;
+  font-weight: 700;
+  margin-top: 40px;
+}
+
+.mobile-bottom-nav {
+  display: none; /* shown only at <=768px */
+}
+
+.player-mini-strip {
+  display: none;
+}
+
