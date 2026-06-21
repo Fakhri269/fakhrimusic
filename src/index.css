@@ -1723,6 +1723,11 @@ img {
 }
 
 /* --- MAIN CONTENT --- */
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
 .app-main {
   grid-row: 1 / 2;
   background: var(--bg-elevated);
@@ -1732,6 +1737,7 @@ img {
   display: flex;
   flex-direction: column;
   position: relative;
+  animation: fadeIn 0.4s ease-out forwards;
 }
 
 .app-topbar {
@@ -1904,31 +1910,38 @@ img {
 }
 
 .featured-card {
-  background: var(--bg-card);
-  padding: 16px;
+  background: rgba(255,255,255,0.05);
   border-radius: var(--radius-md);
-  transition: background 0.3s ease;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  transition: background 0.3s ease, transform 0.2s ease;
   cursor: pointer;
+  position: relative;
 }
 
 .featured-card:hover {
-  background: var(--bg-card-hover);
+  background: rgba(255,255,255,0.1);
+  transform: scale(1.02);
 }
 
 .featured-cover {
-  width: 100%;
-  aspect-ratio: 1;
-  border-radius: var(--radius-md);
-  overflow: hidden;
-  margin-bottom: 16px;
+  width: 80px;
+  height: 80px;
+  flex-shrink: 0;
   position: relative;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.5);
+  overflow: hidden;
 }
 
 .featured-cover img {
   width: 100%;
   height: 100%;
   object-fit: cover;
+  transition: transform 0.3s ease;
+}
+
+.featured-card:hover .featured-cover img {
+  transform: scale(1.05);
 }
 
 .featured-play-overlay {
@@ -1957,16 +1970,21 @@ img {
   align-items: center;
   justify-content: center;
   color: #000;
-  box-shadow: 0 8px 16px rgba(0,0,0,0.4);
-  transform: translateY(10px);
+  box-shadow: 0 8px 8px rgba(0,0,0,0.3);
+  transform: translateY(8px);
   opacity: 0;
-  transition: all 0.3s ease;
+  transition: all 0.3s cubic-bezier(0.3, 0, 0, 1);
 }
 
 .featured-card:hover .featured-play-btn,
 .featured-card-active .featured-play-btn {
   transform: translateY(0);
   opacity: 1;
+}
+
+.featured-play-btn:hover {
+  transform: scale(1.05) !important;
+  background: #1fdf64;
 }
 
 .featured-title {
@@ -1995,15 +2013,19 @@ img {
   grid-template-columns: 48px 48px 1fr 1fr 100px 48px 60px;
   align-items: center;
   padding: 8px 16px;
-  border-radius: var(--radius-md);
-  transition: background 0.2s ease;
+  border-radius: var(--radius-sm);
+  transition: background 0.2s ease, transform 0.2s ease;
   cursor: pointer;
   color: var(--text-subdued);
-  font-size: 0.875rem;
 }
 
 .song-row:hover {
   background: rgba(255,255,255,0.1);
+  color: var(--text-base);
+}
+
+.song-row:active {
+  transform: scale(0.99);
 }
 
 .song-row-active {
@@ -2174,52 +2196,34 @@ img {
   width: 40%;
 }
 
-.player-bar-controls {
-  display: flex;
-  align-items: center;
-  gap: 24px;
-  margin-bottom: 8px;
-}
-
-.bar-ctrl {
+.player-controls button {
+  background: none;
+  border: none;
   color: var(--text-subdued);
-  position: relative;
-}
-
-.bar-ctrl:hover {
-  color: #fff;
-}
-
-.bar-ctrl-active {
-  color: var(--accent);
-}
-
-.bar-ctrl-active::after {
-  content: '';
-  position: absolute;
-  bottom: -6px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 4px;
-  height: 4px;
-  background: var(--accent);
-  border-radius: 50%;
-}
-
-.bar-ctrl-play {
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background: #fff;
-  color: #000;
+  cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: transform 0.1s ease;
+  transition: all 0.2s ease;
 }
 
-.bar-ctrl-play:hover {
+.player-controls button:hover {
+  color: var(--text-base);
   transform: scale(1.1);
+}
+
+.btn-play-circle {
+  width: 32px;
+  height: 32px;
+  background: var(--text-base) !important;
+  color: #000 !important;
+  border-radius: 50%;
+  transition: transform 0.2s cubic-bezier(0.3, 0, 0, 1), background 0.2s !important;
+}
+
+.btn-play-circle:hover {
+  transform: scale(1.05) !important;
+  background: #fff !important;
 }
 
 .repeat-one-badge {

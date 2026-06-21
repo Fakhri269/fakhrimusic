@@ -27,7 +27,13 @@ export const MusicProvider = ({ children }) => {
     // Create hidden div for player
     const div = document.createElement("div");
     div.id = "youtube-player-container";
-    div.style.display = "none";
+    div.style.position = "absolute";
+    div.style.top = "-9999px";
+    div.style.left = "-9999px";
+    div.style.width = "10px";
+    div.style.height = "10px";
+    div.style.opacity = "0";
+    div.style.pointerEvents = "none";
     document.body.appendChild(div);
 
     // Load script
@@ -38,8 +44,8 @@ export const MusicProvider = ({ children }) => {
 
     window.onYouTubeIframeAPIReady = () => {
       playerRef.current = new window.YT.Player("youtube-player-container", {
-        height: "0",
-        width: "0",
+        height: "10",
+        width: "10",
         videoId: "",
         playerVars: {
           autoplay: 0,
