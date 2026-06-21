@@ -719,52 +719,89 @@ img    { display: block; }
   inset: -20px;
   background-size: cover;
   background-position: center;
-  filter: blur(60px) brightness(0.25) saturate(1.5);
-  z-index: 0;
-  transform: scale(1.1);
-}
-
-.sp-fpl-overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(0,0,0,0.5);
+  background: rgba(0,0,0,0.4);
   z-index: 1;
 }
 
-/* --- FPL Layout base (Desktop) --- */
+@keyframes fplBreathing {
+  0% { transform: scale(1.1); filter: blur(60px) brightness(0.3) saturate(1.5); }
+  50% { transform: scale(1.15); filter: blur(80px) brightness(0.4) saturate(2); }
+  100% { transform: scale(1.1); filter: blur(60px) brightness(0.3) saturate(1.5); }
+}
+
+.sp-fpl-bg {
+  position: absolute;
+  inset: -20px;
+  background-size: cover;
+  background-position: center;
+  z-index: 0;
+  animation: fplBreathing 15s ease-in-out infinite;
+}
+
+/* --- FPL Layout base (Desktop Two-Column) --- */
 .sp-fpl-wrapper {
   position: relative;
   z-index: 2;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 450px 1fr;
   width: 100%;
   height: 100%;
-  padding: 0 48px;
+  padding: 48px;
+  gap: 64px;
 }
 
-.sp-fpl-topbar {
+/* Hide mobile-specific layout wrappers on desktop */
+.sp-fpl-mobile-player { display: none; }
+
+.sp-fpl-desktop-left {
   display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 24px 0;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
+  position: relative;
 }
-.sp-fpl-close-btn {
+
+.sp-fpl-close-btn.desktop-close {
+  position: absolute;
+  top: 0;
+  left: 0;
+  background: rgba(0,0,0,0.3);
+  border-radius: 50%;
+  padding: 8px;
+  backdrop-filter: blur(10px);
+}
+
+.sp-fpl-desktop-left .sp-fpl-cover-img {
+  width: 100%;
+  max-width: 450px;
+  aspect-ratio: 1;
+  border-radius: 16px;
+  box-shadow: 0 24px 64px rgba(0,0,0,0.6);
+  margin-bottom: 32px;
+}
+
+.sp-fpl-desktop-left .sp-fpl-title {
+  font-size: 2.5rem;
+  font-weight: 800;
+  color: #fff;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+
+.sp-fpl-desktop-left .sp-fpl-artist {
+  font-size: 1.5rem;
+  font-weight: 600;
   color: rgba(255,255,255,0.7);
-  transition: color 0.2s;
-}
-.sp-fpl-close-btn:hover { color: #fff; }
-.sp-fpl-top-text { display: none; }
-
-/* Hide mobile areas on desktop */
-.sp-fpl-cover-area, .sp-fpl-info-area, .sp-fpl-controls-area {
-  display: none;
 }
 
+/* Lyrics Area (Desktop) */
 .sp-fpl-lyrics-area {
   flex: 1;
   display: flex;
   flex-direction: column;
   overflow: hidden;
+  mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+  -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
 }
 
 .sp-fpl-lyrics-header { display: none; }
@@ -772,40 +809,48 @@ img    { display: block; }
 .sp-fpl-lyrics-scroll {
   flex: 1;
   overflow-y: auto;
-  padding-bottom: 30vh;
-  padding-top: 10vh;
+  padding-bottom: 50vh;
+  padding-top: 20vh;
   scrollbar-width: none;
+  scroll-behavior: smooth;
 }
 .sp-fpl-lyrics-scroll::-webkit-scrollbar { display: none; }
 
 .sp-fpl-lines {
   display: flex;
   flex-direction: column;
-  gap: 16px;
+  gap: 24px;
 }
 
 .sp-fpl-loading {
-  font-size: 1.5rem;
+  font-size: 2rem;
   font-weight: 700;
   color: rgba(255,255,255,0.4);
 }
 
 .sp-fpl-line {
-  font-size: 3.5rem;
+  font-size: 3.2rem;
   font-weight: 800;
   line-height: 1.3;
   color: #fff;
   opacity: 0.3;
+  filter: blur(2px);
   cursor: pointer;
-  transition: color 0.3s ease, font-size 0.3s ease, opacity 0.3s ease;
+  transition: all 0.5s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   letter-spacing: -0.02em;
   transform-origin: left center;
+  will-change: transform, opacity, filter;
 }
-.sp-fpl-line:hover { opacity: 0.6; }
+.sp-fpl-line:hover { 
+  opacity: 0.6; 
+  filter: blur(0px);
+}
 .sp-fpl-line.active {
   color: #fff;
   opacity: 1;
-  font-size: 3.8rem;
+  filter: blur(0px);
+  font-size: 3.6rem;
+  transform: scale(1.02);
 }
 
 /* ───────────────────────────────────────────
@@ -1147,34 +1192,50 @@ img    { display: block; }
   .sp-mobile-nav-btn.active { color: #fff; }
 
   /* Clean up old FPL mobile classes */
-  /* ── MOBILE FULL PAGE LYRICS (Now Playing View) ── */
+  /* ── MOBILE FULL PAGE LYRICS (Premium Immersive) ── */
   .sp-fpl-wrapper {
-    padding: 16px 24px;
-    gap: 20px;
+    display: flex;
+    flex-direction: column;
+    padding: 16px 20px;
+    gap: 16px;
+    height: 100vh;
+    overflow: hidden;
   }
+  .sp-fpl-desktop-left { display: none; }
+  
+  .sp-fpl-mobile-player {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
   .sp-fpl-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
     padding: 0;
   }
   .sp-fpl-top-text {
-    display: block;
-    font-size: 0.7rem;
-    font-weight: 700;
-    letter-spacing: 0.1em;
-    color: #fff;
+    font-size: 0.75rem;
+    font-weight: 800;
+    letter-spacing: 0.15em;
+    color: rgba(255,255,255,0.8);
+    text-shadow: 0 2px 4px rgba(0,0,0,0.3);
   }
   
   .sp-fpl-cover-area {
     display: flex;
     justify-content: center;
     width: 100%;
-    margin-top: 10px;
+    margin-top: 4px;
+    transition: all 0.3s ease;
   }
   .sp-fpl-cover-img {
     width: 100%;
-    max-width: 350px;
+    max-width: 280px; /* slightly smaller to leave room for lyrics */
     aspect-ratio: 1;
-    border-radius: 8px;
-    box-shadow: 0 12px 30px rgba(0,0,0,0.5);
+    border-radius: 12px;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.6);
     object-fit: cover;
   }
 
@@ -1183,15 +1244,17 @@ img    { display: block; }
     justify-content: space-between;
     align-items: center;
     width: 100%;
+    margin-top: 8px;
   }
-  .sp-fpl-title { font-size: 1.4rem; font-weight: 800; color: #fff; margin-bottom: 4px; }
-  .sp-fpl-artist { font-size: 1rem; color: rgba(255,255,255,0.7); }
+  .sp-fpl-title { font-size: 1.5rem; font-weight: 800; color: #fff; margin-bottom: 2px; text-shadow: 0 2px 8px rgba(0,0,0,0.4); }
+  .sp-fpl-artist { font-size: 1.1rem; font-weight: 500; color: rgba(255,255,255,0.8); }
 
   .sp-fpl-controls-area {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 12px;
     width: 100%;
+    margin-bottom: 8px;
   }
   .sp-fpl-mobile-btns {
     display: flex;
@@ -1200,39 +1263,47 @@ img    { display: block; }
     width: 100%;
   }
 
-  /* Mobile Lyrics Card */
+  /* Glassy Lyrics Card Area */
   .sp-fpl-lyrics-area {
-    background: rgba(0,0,0,0.4);
-    border-radius: 12px;
-    padding: 16px;
     flex: 1;
     display: flex;
     flex-direction: column;
-    min-height: 200px;
+    background: rgba(0, 0, 0, 0.2);
+    backdrop-filter: blur(20px);
+    -webkit-backdrop-filter: blur(20px);
+    border-radius: 16px;
+    padding: 20px;
+    border: 1px solid rgba(255,255,255,0.08);
+    mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
+    -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 10%, black 90%, transparent 100%);
   }
+
   .sp-fpl-lyrics-header {
-    display: block;
-    font-size: 0.9rem;
-    font-weight: 800;
-    color: #fff;
-    margin-bottom: 12px;
+    display: none; /* Hide header for a cleaner look */
   }
   .sp-fpl-lyrics-scroll {
-    padding-top: 0;
-    padding-bottom: 40px;
+    padding-top: 10vh;
+    padding-bottom: 30vh;
   }
   .sp-fpl-lines {
-    gap: 10px;
+    gap: 16px;
   }
   .sp-fpl-line {
-    font-size: 1.5rem;
+    font-size: 1.6rem;
+    font-weight: 800;
     color: #fff;
-    opacity: 0.4;
+    opacity: 0.3;
+    filter: blur(1px);
+    transform-origin: left center;
+    transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   }
   .sp-fpl-line.active {
-    font-size: 1.6rem;
+    font-size: 1.8rem;
     color: #fff;
     opacity: 1;
+    filter: blur(0px);
+    transform: scale(1.02);
+    text-shadow: 0 4px 16px rgba(0,0,0,0.5);
   }
 
   .sp-fpl-mobile-controls { display: none; }

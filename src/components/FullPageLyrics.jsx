@@ -102,66 +102,83 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
       <div className="sp-fpl-overlay" />
 
       <div className="sp-fpl-wrapper">
-        {/* 1. Topbar */}
-        <div className="sp-fpl-topbar">
-          <button className="sp-fpl-close-btn" onClick={onClose}>
-            <ChevronLeft size={28} />
-          </button>
-          <div className="sp-fpl-top-text">PLAYING FROM SEARCH</div>
-          <div style={{ width: 28 }} />
+        {/* DESKTOP: Left Side (Album Art & Info) */}
+        <div className="sp-fpl-desktop-left">
+           <button className="sp-fpl-close-btn desktop-close" onClick={onClose}>
+             <ChevronDown size={32} />
+           </button>
+           <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-cover-img" />
+           <div className="sp-fpl-title">{currentSong.title}</div>
+           <div className="sp-fpl-artist">{currentSong.artist}</div>
         </div>
 
-        {/* 2. Cover Art (Mobile Only) */}
-        <div className="sp-fpl-cover-area">
-          <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-cover-img" />
-        </div>
-
-        {/* 3. Info Area (Mobile Only) */}
-        <div className="sp-fpl-info-area">
-          <div className="sp-fpl-meta">
-            <div className="sp-fpl-title">{currentSong.title}</div>
-            <div className="sp-fpl-artist">{currentSong.artist}</div>
+        {/* MOBILE: Topbar & Player Elements (Hidden on Desktop) */}
+        <div className="sp-fpl-mobile-player">
+          {/* 1. Topbar */}
+          <div className="sp-fpl-topbar">
+            <button className="sp-fpl-close-btn" onClick={onClose}>
+              <ChevronLeft size={28} />
+            </button>
+            <div className="sp-fpl-top-text">PLAYING FROM SEARCH</div>
+            <div style={{ width: 28 }} />
           </div>
-        </div>
 
-        {/* 4. Controls Area (Mobile Only, above lyrics) */}
-        <div className="sp-fpl-controls-area">
-          <div className="sp-progress">
-            <span className="sp-time">{fmt(currentTime)}</span>
-            <div className="sp-progress-track"
-              onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
-              <div className="sp-progress-fill" style={{ width: `${(currentTime / duration) * 100 || 0}%` }} />
+          {/* 2. Cover Art */}
+          <div className="sp-fpl-cover-area">
+            <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-cover-img" />
+          </div>
+
+          {/* 3. Info Area */}
+          <div className="sp-fpl-info-area">
+            <div className="sp-fpl-meta">
+              <div className="sp-fpl-title">{currentSong.title}</div>
+              <div className="sp-fpl-artist">{currentSong.artist}</div>
             </div>
-            <span className="sp-time">{fmt(duration)}</span>
           </div>
-          
-          <div className="sp-fpl-mobile-btns">
-            <button className={`sp-ctrl ${isShuffled ? 'active' : ''}`} onClick={toggleShuffle}>
-              <Shuffle size={24} />
-            </button>
-            <button className="sp-ctrl" onClick={handlePrev}><SkipBack size={32} fill="currentColor" /></button>
-            <button className="sp-ctrl sp-ctrl-play" style={{ width: 64, height: 64, backgroundColor: '#fff', color: '#000', borderRadius: '50%' }} onClick={togglePlay}>
-              {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: 4 }} />}
-            </button>
-            <button className="sp-ctrl" onClick={handleNext}><SkipForward size={32} fill="currentColor" /></button>
-            <button className={`sp-ctrl ${repeatMode !== 'none' ? 'active' : ''}`} onClick={toggleRepeat}>
-              <Repeat size={24} />
-              {repeatMode === 'one' && (
-                <span style={{ position: 'absolute', bottom: -4, right: -2, fontSize: '0.65rem', fontWeight: 900, color: 'var(--sp-green)' }}>1</span>
-              )}
-            </button>
+
+          {/* 4. Controls Area */}
+          <div className="sp-fpl-controls-area">
+            <div className="sp-progress">
+              <span className="sp-time">{fmt(currentTime)}</span>
+              <div className="sp-progress-track"
+                onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
+                <div className="sp-progress-fill" style={{ width: `${(currentTime / duration) * 100 || 0}%` }} />
+              </div>
+              <span className="sp-time">{fmt(duration)}</span>
+            </div>
+            
+            <div className="sp-fpl-mobile-btns">
+              <button className={`sp-ctrl ${isShuffled ? 'active' : ''}`} onClick={toggleShuffle}>
+                <Shuffle size={24} />
+              </button>
+              <button className="sp-ctrl" onClick={handlePrev}><SkipBack size={32} fill="currentColor" /></button>
+              <button className="sp-ctrl sp-ctrl-play" style={{ width: 64, height: 64, backgroundColor: '#fff', color: '#000', borderRadius: '50%' }} onClick={togglePlay}>
+                {isPlaying ? <Pause size={32} fill="currentColor" /> : <Play size={32} fill="currentColor" style={{ marginLeft: 4 }} />}
+              </button>
+              <button className="sp-ctrl" onClick={handleNext}><SkipForward size={32} fill="currentColor" /></button>
+              <button className={`sp-ctrl ${repeatMode !== 'none' ? 'active' : ''}`} onClick={toggleRepeat}>
+                <Repeat size={24} />
+                {repeatMode === 'one' && (
+                  <span style={{ position: 'absolute', bottom: -4, right: -2, fontSize: '0.65rem', fontWeight: 900, color: 'var(--sp-green)' }}>1</span>
+                )}
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* 5. Lyrics Area */}
+        {/* BOTH: Lyrics Area */}
         <div className="sp-fpl-lyrics-area">
           <div className="sp-fpl-lyrics-header">Lyrics</div>
-          <div className="sp-fpl-lyrics-scroll">
-            {loading ? (
-              <div className="sp-fpl-loading">Memuat lirik...</div>
-            ) : lyricsData.length === 0 ? (
-              <div className="sp-fpl-loading">Lirik tidak ditemukan.</div>
-            ) : (
+          {loading ? (
+            <div className="sp-fpl-lyrics-scroll" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="sp-fpl-loading">Loading lyrics...</div>
+            </div>
+          ) : lyricsData.length === 0 ? (
+            <div className="sp-fpl-lyrics-scroll" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div className="sp-fpl-loading">No lyrics available</div>
+            </div>
+          ) : (
+            <div className="sp-fpl-lyrics-scroll">
               <div className="sp-fpl-lines">
                 {lyricsData.map((line, i) => (
                   <div
