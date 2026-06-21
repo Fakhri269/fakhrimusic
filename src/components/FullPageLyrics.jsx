@@ -48,6 +48,7 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
     seekTo, isShuffled, toggleShuffle, repeatMode, toggleRepeat 
   } = useMusic();
   const [lyricsData, setLyricsData] = useState([]);
+  const [artistInfo, setArtistInfo] = useState(null);
   const [loading, setLoading] = useState(true);
   const [activeLine, setActiveLine] = useState(0);
   const activeRef = useRef(null);
@@ -76,6 +77,20 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
         setLoading(false);
       })
       .catch(() => setLoading(false));
+
+    // Fetch Artist Info
+    fetch(`https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(artist)}`)
+      .then(r => r.json())
+      .then(data => {
+        if (data && data.extract) {
+          setArtistInfo({
+            bio: data.extract,
+            photo: data.thumbnail?.source || currentSong.cover
+          });
+        }
+      })
+      .catch(console.error);
+
   }, [currentSong?.id]);
 
   // Sync active line to currentTime
@@ -168,17 +183,16 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
 
         {/* BOTH: Lyrics Area */}
         <div className="sp-fpl-lyrics-area">
-          <div className="sp-fpl-lyrics-header">Lyrics</div>
-          {loading ? (
-            <div className="sp-fpl-lyrics-scroll" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="sp-fpl-loading">Loading lyrics...</div>
-            </div>
-          ) : lyricsData.length === 0 ? (
-            <div className="sp-fpl-lyrics-scroll" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <div className="sp-fpl-loading">No lyrics available</div>
-            </div>
-          ) : (
-            <div className="sp-fpl-lyrics-scroll">
+          <div className="sp-fpl-lyrics-scroll">
+            {loading ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px' }}>
+                <div className="sp-fpl-loading">Loading lyrics...</div>
+              </div>
+            ) : lyricsData.length === 0 ? (
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '200px' }}>
+                <div className="sp-fpl-loading">No lyrics available</div>
+              </div>
+            ) : (
               <div className="sp-fpl-lines">
                 {lyricsData.map((line, i) => (
                   <div
@@ -191,8 +205,32 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
                   </div>
                 ))}
               </div>
+            )}
+
+            {/* ADDITIONAL INFO CARDS */}
+            <div className="sp-fpl-info-cards" style={{ display: 'flex', flexDirection: 'column', gap: '20px', marginTop: '60px', paddingBottom: '100px' }}>
+              {artistInfo && (
+                <div className="sp-fpl-info-card">
+                  <div className="sp-fpl-card-title">About the artist</div>
+                  <img src={artistInfo.photo} alt={currentSong.artist} className="sp-fpl-artist-photo" />
+                  <div className="sp-fpl-artist-bio">{artistInfo.bio}</div>
+                </div>
+              )}
+
+              <div className="sp-fpl-info-card">
+                <div className="sp-fpl-card-title">Credits</div>
+                <div className="sp-fpl-credit-row">
+                  <span className="sp-fpl-credit-role">Performed by</span>
+                  <span className="sp-fpl-credit-name">{currentSong.artist}</span>
+                </div>
+                <div className="sp-fpl-credit-row" style={{ marginTop: '8px' }}>
+                  <span className="sp-fpl-credit-role">Source</span>
+                  <span className="sp-fpl-credit-name">YouTube Music API</span>
+                </div>
+              </div>
             </div>
-          )}
+            
+          </div>
         </div>
 
       </div>
