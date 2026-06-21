@@ -4,35 +4,34 @@ import { useMusic } from '../context/MusicContext';
 
 function parseLRC(lrcText) {
   if (!lrcText) return [];
-  const lines = lrcText.split('\n');
-  const parsed = [];
-  for (const line of lines) {
-    const match = line.match(/^\[(\d+):(\d+\.\d+)\]\s*(.*)/);
-    if (match) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseFloat(match[2]);
-      const text = match[3].trim();
-      if (text) parsed.push({ time: minutes * 60 + seconds, text });
-    }
-  }
-  return parsed.sort((a, b) => a.time - b.time);
+  return lrcText.split('\n')
+    .map(line => {
+      const m = line.match(/^\[(\d+):(\d+\.\d+)\]\s*(.*)/);
+      if (!m) return null;
+      const text = m[3].trim();
+      if (!text) return null;
+      return { time: parseInt(m[1]) * 60 + parseFloat(m[2]), text };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.time - b.time);
 }
 
 const NowPlayingSidebar = ({ currentSong, onClose, onExpandLyrics }) => {
   const { currentTime } = useMusic();
   const [lyricsData, setLyricsData] = useState([]);
   const [activeLine, setActiveLine] = useState(0);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     if (!currentSong) return;
     setLyricsData([]);
     setActiveLine(0);
-    const artistClean = currentSong.artist.split(/ft\.|feat\.| & /i)[0].trim();
-    const url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(currentSong.title)}&artist_name=${encodeURIComponent(artistClean)}`;
-    fetch(url)
+    setLoading(true);
+    const artist = currentSong.artist.split(/ft\.|feat\.| & /i)[0].trim();
+    fetch(`https://lrclib.net/api/search?track_name=${encodeURIComponent(currentSong.title)}&artist_name=${encodeURIComponent(artist)}`)
       .then(r => r.json())
       .then(results => {
-        if (results && results.length > 0) {
+        if (results?.length > 0) {
           const synced = results.find(r => r.syncedLyrics);
           if (synced?.syncedLyrics) {
             setLyricsData(parseLRC(synced.syncedLyrics));
@@ -44,8 +43,9 @@ const NowPlayingSidebar = ({ currentSong, onClose, onExpandLyrics }) => {
             );
           }
         }
+        setLoading(false);
       })
-      .catch(() => {});
+      .catch(() => setLoading(false));
   }, [currentSong?.id]);
 
   useEffect(() => {
@@ -60,70 +60,71 @@ const NowPlayingSidebar = ({ currentSong, onClose, onExpandLyrics }) => {
 
   if (!currentSong) return null;
 
-  // Show current and a few upcoming lines
-  const visibleLines = lyricsData.slice(
-    Math.max(0, activeLine - 1),
-    activeLine + 6
-  );
+  const visible = lyricsData.slice(Math.max(0, activeLine - 1), activeLine + 5);
 
   return (
-    <aside className="right-sidebar">
-      <div className="now-playing-header">
+    <aside className="sp-now-playing-sidebar">
+      <div className="sp-nps-header">
         <span>Now playing view</span>
-        <button onClick={onClose} aria-label="Close"><X size={20} /></button>
+        <button onClick={onClose}><X size={18} /></button>
       </div>
 
-      <div className="now-playing-cover">
-        <img src={currentSong.cover} alt={currentSong.title} />
+      <img src={currentSong.cover} alt={currentSong.title} className="sp-nps-cover" />
+
+      <div className="sp-nps-track">
+        <div className="sp-nps-title">{currentSong.title}</div>
+        <div className="sp-nps-artist">{currentSong.artist}</div>
       </div>
 
-      <div className="now-playing-info">
-        <div className="title">{currentSong.title}</div>
-        <div className="artist">{currentSong.artist}</div>
-      </div>
-
-      <div className="about-artist-card">
-        <h3>About the artist</h3>
-        <p>
-          {currentSong.artist} adalah salah satu musisi populer saat ini.
-          Lagu "{currentSong.title}" telah diputar lebih dari jutaan kali di seluruh dunia!
-        </p>
-      </div>
-
-      <div
-        className="lyrics-card"
-        onClick={onExpandLyrics}
-        style={{ cursor: 'pointer' }}
-        onMouseEnter={e => e.currentTarget.style.transform = 'scale(1.02)'}
-        onMouseLeave={e => e.currentTarget.style.transform = 'scale(1)'}
-      >
-        <div className="lyrics-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-          <span>Lyrics</span>
-          <Maximize2 size={16} />
-        </div>
-        <div className="lyrics-content">
-          {lyricsData.length === 0 ? (
-            <div className="lyrics-line" style={{ opacity: 0.5 }}>Memuat lirik...</div>
-          ) : (
-            visibleLines.map((line, i) => {
-              const isActive = lyricsData.indexOf(line) === activeLine;
-              return (
-                <div
-                  key={lyricsData.indexOf(line)}
-                  className={`lyrics-line ${isActive ? 'active' : ''}`}
-                >
-                  {line.text}
-                </div>
-              );
-            })
-          )}
-          <div style={{ marginTop: 12, opacity: 0.4, fontSize: '0.8rem' }}>
-            Klik untuk lihat semua lirik ↗
+      <div className="sp-nps-scroll">
+        {/* Lyrics card */}
+        <div className="sp-lyrics-card" onClick={onExpandLyrics}>
+          <div className="sp-lyrics-card-header">
+            <span>Lyrics</span>
+            <Maximize2 size={14} />
           </div>
+          {loading ? (
+            <div className="sp-lyrics-preview-line" style={{ opacity: 0.5 }}>Memuat lirik...</div>
+          ) : lyricsData.length === 0 ? (
+            <div className="sp-lyrics-preview-line" style={{ opacity: 0.5 }}>Lirik tidak ditemukan.</div>
+          ) : (
+            <>
+              {visible.map((line, i) => {
+                const globalIdx = lyricsData.indexOf(line);
+                return (
+                  <div
+                    key={globalIdx}
+                    className={`sp-lyrics-preview-line ${globalIdx === activeLine ? 'active' : ''}`}
+                  >
+                    {line.text}
+                  </div>
+                );
+              })}
+              <div style={{ marginTop: 10, opacity: 0.4, fontSize: '0.75rem', fontWeight: 600 }}>
+                Klik untuk lihat semua →
+              </div>
+            </>
+          )}
+        </div>
+
+        {/* About artist */}
+        <div className="sp-about-card">
+          <h4>About the artist</h4>
+          <p>
+            {currentSong.artist} adalah salah satu musisi paling populer saat ini.
+            Lagu "{currentSong.title}" dari album {currentSong.album} telah didengarkan
+            lebih dari {fmtPlays(currentSong.plays)} kali di seluruh dunia.
+          </p>
         </div>
       </div>
     </aside>
   );
 };
+
+function fmtPlays(n) {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(0) + 'M';
+  return n;
+}
 
 export default NowPlayingSidebar;

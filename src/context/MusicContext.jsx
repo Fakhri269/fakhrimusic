@@ -94,7 +94,7 @@ export const MusicProvider = ({ children }) => {
           setCurrentTime(playerRef.current.getCurrentTime());
           setDuration(playerRef.current.getDuration());
         }
-      }, 500);
+      }, 250);
     }
     return () => clearInterval(interval);
   }, [isPlaying, isPlayerReady]);

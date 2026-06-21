@@ -2,27 +2,106 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
   Music2, Search, Home, Heart, ListMusic, LogOut, Play, Pause,
-  SkipBack, SkipForward, Shuffle, Repeat, Volume2,
-  ChevronRight, Mic2, Radio, TrendingUp, User, Clock
+  SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX,
+  ChevronRight, Mic2, Library, Plus, Radio, TrendingUp, User, Clock, X
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
 import NowPlayingSidebar from '../components/NowPlayingSidebar';
 import FullPageLyrics from '../components/FullPageLyrics';
 
-const formatTime = (s) => {
+const fmt = (s) => {
   if (!s || isNaN(s)) return '0:00';
-  const m = Math.floor(s / 60);
-  const sec = Math.floor(s % 60);
-  return `${m}:${sec.toString().padStart(2, '0')}`;
+  return `${Math.floor(s / 60)}:${String(Math.floor(s % 60)).padStart(2, '0')}`;
 };
-
-const formatPlays = (n) => {
-  if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
-  if (n >= 1000) return (n / 1000).toFixed(0) + 'K';
+const fmtPlays = (n) => {
+  if (n >= 1e9) return (n / 1e9).toFixed(1) + 'B';
+  if (n >= 1e6) return (n / 1e6).toFixed(0) + 'M';
+  if (n >= 1e3) return (n / 1e3).toFixed(0) + 'K';
   return n;
 };
+const getGreeting = () => {
+  const h = new Date().getHours();
+  if (h < 12) return 'Selamat pagi';
+  if (h < 17) return 'Selamat siang';
+  if (h < 21) return 'Selamat sore';
+  return 'Selamat malam';
+};
 
+const QUICK = [
+  { color: '#e91429', bg: '#450d10', label: 'Top Charts', icon: '🏆' },
+  { color: '#1e3264', bg: '#0d1b38', label: 'New Releases', icon: '🎵' },
+  { color: '#8d67ab', bg: '#2a1a3d', label: 'Podcasts', icon: '🎙️' },
+  { color: '#e8115b', bg: '#45062e', label: 'Pop', icon: '⚡' },
+  { color: '#1e8c45', bg: '#0a2e18', label: 'Hip-Hop', icon: '🔥' },
+  { color: '#ba5d07', bg: '#3d1e02', label: 'R&B', icon: '🎸' },
+];
+
+// ── Song Row ──────────────────────────────────────────────────────────────
+const SongRow = ({ song, index, onPlay, isActive, isPlaying, isLiked, onLike }) => (
+  <div className={`sp-song-row ${isActive ? 'active' : ''}`} onClick={onPlay}>
+    <div className="sp-song-num">
+      {isPlaying ? (
+        <span className="sp-wave"><span/><span/><span/></span>
+      ) : (
+        <>
+          <span className="num">{index + 1}</span>
+          <span className="play-icon"><Play size={14} fill="currentColor" /></span>
+        </>
+      )}
+    </div>
+
+    <div className="sp-song-info">
+      <img src={song.cover} alt={song.title} className="sp-song-cover" />
+      <div className="sp-song-meta">
+        <div className="sp-song-title">{song.title}</div>
+        <div className="sp-song-artist">{song.artist}</div>
+      </div>
+    </div>
+
+    <div className="sp-song-album">{song.album}</div>
+    <div className="sp-song-plays">{fmtPlays(song.plays)}</div>
+
+    <div className="sp-song-end">
+      <button
+        className={`sp-song-heart ${isLiked ? 'liked' : ''}`}
+        onClick={e => { e.stopPropagation(); onLike(); }}
+      >
+        <Heart size={14} fill={isLiked ? 'currentColor' : 'none'} />
+      </button>
+      <span className="sp-song-duration">
+        {Math.floor(song.duration / 60)}:{String(song.duration % 60).padStart(2, '0')}
+      </span>
+    </div>
+  </div>
+);
+
+// ── Song Header ───────────────────────────────────────────────────────────
+const SongHeader = () => (
+  <div className="sp-song-header">
+    <div>#</div>
+    <div style={{ paddingLeft: 52 }}>JUDUL</div>
+    <div>ALBUM</div>
+    <div>DIPUTAR</div>
+    <div style={{ display: 'flex', justifyContent: 'flex-end' }}><Clock size={14} /></div>
+  </div>
+);
+
+// ── Album / Artist Card ────────────────────────────────────────────────────
+const Card = ({ song, isPlaying, isActive, onPlay }) => (
+  <div className={`sp-card ${isActive ? 'playing' : ''}`} onClick={onPlay}>
+    <div className="sp-card-img-wrap">
+      <img src={song.cover} alt={song.title} className="sp-card-img" />
+      <button className="sp-card-play-btn" onClick={e => { e.stopPropagation(); onPlay(); }}>
+        {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+      </button>
+    </div>
+    <div className="sp-card-name">{song.title}</div>
+    <div className="sp-card-sub">{song.artist}</div>
+  </div>
+);
+
+// ── Main AppPage ──────────────────────────────────────────────────────────
 const AppPage = () => {
   const { user, logout } = useAuth();
   const navigate = useNavigate();
@@ -36,469 +115,346 @@ const AppPage = () => {
 
   const [activeNav, setActiveNav] = useState('home');
   const [search, setSearch] = useState('');
-  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
-  const [isLyricsExpanded, setIsLyricsExpanded] = useState(false);
+  const [isNowPlayingOpen, setIsNowPlayingOpen] = useState(false);
+  const [isLyricsOpen, setIsLyricsOpen] = useState(false);
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/');
-  };
+  const handleLogout = async () => { await logout(); navigate('/'); };
 
   const filtered = songs.filter(s =>
     s.title.toLowerCase().includes(search.toLowerCase()) ||
     s.artist.toLowerCase().includes(search.toLowerCase())
   );
+  const featured  = songs.slice(0, 6);
+  const trending  = [...songs].sort((a, b) => b.plays - a.plays).slice(0, 6);
+  const likedList = songs.filter(s => isLiked(s.id));
 
-  const featured = songs.slice(0, 6);
-  const trending = [...songs].sort((a, b) => b.plays - a.plays).slice(0, 5);
+  const openLyrics = () => { setIsNowPlayingOpen(false); setIsLyricsOpen(true); };
+  const closeLyrics = () => { setIsLyricsOpen(false); setIsNowPlayingOpen(true); };
+
+  const pct = duration ? (currentTime / duration) * 100 : 0;
 
   return (
-    <div className="app-layout">
-      {/* ── SIDEBAR ── */}
-      <aside className="sidebar">
-        <div className="sidebar-logo">
-          <Music2 size={24} />
+    <div className="sp-layout">
+      {/* ─── LEFT SIDEBAR ─── */}
+      <aside className="sp-sidebar">
+        <div className="sp-sidebar-logo">
+          <Music2 size={28} />
           <span>FakhriMusic</span>
         </div>
 
-        <nav className="sidebar-nav">
-          <button
-            className={`sidebar-nav-item ${activeNav === 'home' ? 'active' : ''}`}
-            onClick={() => setActiveNav('home')}
-          >
-            <Home size={20} /> Beranda
-          </button>
-          <button
-            className={`sidebar-nav-item ${activeNav === 'search' ? 'active' : ''}`}
-            onClick={() => setActiveNav('search')}
-          >
-            <Search size={20} /> Cari
-          </button>
-          <button
-            className={`sidebar-nav-item ${activeNav === 'liked' ? 'active' : ''}`}
-            onClick={() => setActiveNav('liked')}
-          >
-            <Heart size={20} /> Disukai
-          </button>
-          <button
-            className={`sidebar-nav-item ${activeNav === 'playlist' ? 'active' : ''}`}
-            onClick={() => setActiveNav('playlist')}
-          >
-            <ListMusic size={20} /> Playlist
-          </button>
+        <nav className="sp-nav">
+          {[
+            { key: 'home',     icon: <Home size={22} />,      label: 'Beranda' },
+            { key: 'search',   icon: <Search size={22} />,    label: 'Cari' },
+          ].map(({ key, icon, label }) => (
+            <button
+              key={key}
+              className={`sp-nav-item ${activeNav === key ? 'active' : ''}`}
+              onClick={() => setActiveNav(key)}
+            >
+              {icon}
+              {label}
+            </button>
+          ))}
         </nav>
 
-        {/* User profile */}
-        <div className="sidebar-user">
-          {user?.photoURL
-            ? <img src={user.photoURL} alt={user.displayName} className="sidebar-avatar" />
-            : (
-              <div className="sidebar-avatar-placeholder">
-                <User size={16} />
-              </div>
-            )
-          }
-          <div className="sidebar-user-info">
-            <div className="sidebar-user-name">{user?.displayName || user?.email?.split('@')[0] || 'User'}</div>
-            <div className="sidebar-user-email">{user?.email}</div>
+        {/* Library */}
+        <div className="sp-sidebar-library">
+          <div className="sp-library-header">
+            <div className="sp-library-title">
+              <Library size={18} />
+              <span>Library</span>
+            </div>
+            <button className="sp-library-add" title="Tambah playlist"><Plus size={18} /></button>
           </div>
-          <button className="sidebar-logout" onClick={handleLogout} title="Keluar">
+
+          {/* Nav items inside library */}
+          {[
+            { key: 'liked',    icon: <Heart size={18} />,       label: 'Lagu Disukai',  sub: 'Playlist • ' + likedList.length + ' lagu' },
+            { key: 'playlist', icon: <ListMusic size={18} />,   label: 'My Playlist',   sub: 'Playlist' },
+          ].map(({ key, icon, label, sub }) => (
+            <div
+              key={key}
+              className={`sp-playlist-item ${activeNav === key ? 'active' : ''}`}
+              onClick={() => setActiveNav(key)}
+            >
+              <div className="sp-playlist-cover-placeholder">{icon}</div>
+              <div className="sp-playlist-info">
+                <div className="name">{label}</div>
+                <div className="sub">{sub}</div>
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* User profile at bottom */}
+        <div className="sp-sidebar-user">
+          {user?.photoURL
+            ? <img src={user.photoURL} alt="" className="sp-user-avatar" />
+            : <div className="sp-user-avatar-ph"><User size={14} /></div>
+          }
+          <span className="sp-user-name">{user?.displayName || user?.email?.split('@')[0] || 'User'}</span>
+          <button className="sp-logout-btn" onClick={handleLogout} title="Keluar">
             <LogOut size={16} />
           </button>
         </div>
       </aside>
 
-      {/* ── MAIN CONTENT ── */}
-      <main className="app-main">
-        {/* Top bar */}
-        <div className="app-topbar">
-          <div className="app-search-wrap">
-            <Search size={18} className="app-search-icon" />
+      {/* ─── MAIN ─── */}
+      <main className="sp-main">
+        {/* Topbar */}
+        <div className="sp-topbar">
+          <div className="sp-search-wrap">
+            <Search size={16} color="#b3b3b3" />
             <input
               type="text"
-              className="app-search-input"
-              placeholder="Cari lagu, artis, album..."
+              className="sp-search-input"
+              placeholder="Cari lagu atau artis..."
               value={search}
-              onChange={e => {
-                setSearch(e.target.value);
-                if (e.target.value) setActiveNav('search');
-                else setActiveNav('home');
-              }}
+              onChange={e => { setSearch(e.target.value); setActiveNav(e.target.value ? 'search' : 'home'); }}
             />
           </div>
-          <div className="app-topbar-right">
-            <span className="app-greeting">
-              Halo, {user?.displayName?.split(' ')[0] || 'User'} 👋
+          <div className="sp-topbar-right">
+            <span className="sp-topbar-greeting">
+              Halo, {user?.displayName?.split(' ')[0] || 'Pendengar'}!
             </span>
-            {user?.photoURL && (
-              <img src={user.photoURL} className="topbar-avatar" alt="" />
-            )}
+            {user?.photoURL && <img src={user.photoURL} className="sp-topbar-avatar" alt="" />}
           </div>
         </div>
 
-        <div className="app-scroll">
-          {/* SEARCH VIEW */}
+        <div className="sp-scroll">
+          {/* ── SEARCH VIEW ── */}
           {activeNav === 'search' && (
-            <section className="app-section">
-              <h2 className="section-h2">Hasil pencarian "{search}"</h2>
-              <div className="song-list">
-                <SongListHeader />
-                {filtered.length === 0
-                  ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
-                  : filtered.map((song, i) => (
-                    <SongRow key={song.id} song={song} index={i} onPlay={() => {
-                      if (currentSong?.id === song.id) {
-                        togglePlay();
-                      } else {
-                        playSong(song, filtered);
-                      }
-                    }} isActive={currentSong?.id === song.id} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
-                  ))
-                }
-              </div>
+            <section className="sp-section">
+              <h2 className="sp-section-title" style={{ marginBottom: 16 }}>
+                Hasil untuk "{search}"
+              </h2>
+              <SongHeader />
+              {filtered.length === 0
+                ? <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Tidak ada lagu ditemukan.</p>
+                : filtered.map((song, i) => (
+                  <SongRow key={song.id} song={song} index={i}
+                    onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, filtered)}
+                    isActive={currentSong?.id === song.id}
+                    isPlaying={isPlaying && currentSong?.id === song.id}
+                    isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                ))
+              }
             </section>
           )}
 
-          {/* LIKED VIEW */}
+          {/* ── LIKED VIEW ── */}
           {activeNav === 'liked' && (
-            <section className="app-section">
-              <h2 className="section-h2">Lagu yang Disukai</h2>
-              <div className="song-list">
-                <SongListHeader />
-                {songs.filter(s => isLiked(s.id)).length === 0
-                  ? <p style={{ color: 'var(--text-subdued)', padding: '24px 0' }}>Kamu belum menyukai lagu apapun.</p>
-                  : songs.filter(s => isLiked(s.id)).map((song, i) => (
-                    <SongRow key={song.id} song={song} index={i} onPlay={() => {
-                      if (currentSong?.id === song.id) {
-                        togglePlay();
-                      } else {
-                        playSong(song, songs.filter(s => isLiked(s.id)));
-                      }
-                    }} isActive={currentSong?.id === song.id} isPlaying={isPlaying && currentSong?.id === song.id} isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
-                  ))
-                }
-              </div>
+            <section className="sp-section">
+              <h2 className="sp-section-title" style={{ marginBottom: 16 }}>Lagu yang Disukai</h2>
+              <SongHeader />
+              {likedList.length === 0
+                ? <p style={{ color: '#b3b3b3', padding: '24px 0' }}>Belum ada lagu yang disukai.</p>
+                : likedList.map((song, i) => (
+                  <SongRow key={song.id} song={song} index={i}
+                    onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, likedList)}
+                    isActive={currentSong?.id === song.id}
+                    isPlaying={isPlaying && currentSong?.id === song.id}
+                    isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                ))
+              }
             </section>
           )}
 
-          {/* HOME VIEW */}
+          {/* ── PLAYLIST VIEW ── */}
+          {activeNav === 'playlist' && (
+            <section className="sp-section">
+              <h2 className="sp-section-title" style={{ marginBottom: 16 }}>My Playlist</h2>
+              <p style={{ color: '#b3b3b3' }}>Fitur playlist segera hadir.</p>
+            </section>
+          )}
+
+          {/* ── HOME VIEW ── */}
           {activeNav === 'home' && (
             <>
-              {/* Hero greeting */}
-              <div className="app-hero-greeting">
-                <div>
-                  <h1 className="app-hero-title">
-                    {getGreeting()}, {user?.displayName?.split(' ')[0] || 'Pendengar'}!
-                  </h1>
-                  <p className="app-hero-sub">Apa yang ingin kamu dengarkan hari ini?</p>
-                </div>
-                <div className="app-hero-quick">
-                  {[{icon: <Radio size={18}/>, label:'Radio'},{icon:<TrendingUp size={18}/>, label:'Charts'},{icon:<Mic2 size={18}/>, label:'Podcast'}].map(q => (
-                    <div className="quick-chip" key={q.label}>{q.icon}{q.label}</div>
+              {/* Greeting */}
+              <div className="sp-hero">
+                <h1 className="sp-hero-title">
+                  {getGreeting()}, {user?.displayName?.split(' ')[0] || 'Pendengar'}!
+                </h1>
+
+                {/* Quick access grid */}
+                <div className="sp-quick-grid">
+                  {QUICK.map(q => (
+                    <div className="sp-quick-card" key={q.label}
+                      style={{ background: `linear-gradient(135deg, ${q.bg} 0%, ${q.color}33 100%)` }}>
+                      <div className="sp-quick-card-color">{q.icon}</div>
+                      <span className="sp-quick-card-label">{q.label}</span>
+                    </div>
                   ))}
                 </div>
               </div>
 
-              {/* Featured grid */}
-              <section className="app-section">
-                <div className="section-row">
-                  <h2 className="section-h2">Rekomendasi Untukmu</h2>
-                  <button className="see-all">Lihat semua <ChevronRight size={14}/></button>
+              {/* Featured Cards */}
+              <section className="sp-section">
+                <div className="sp-section-header">
+                  <h2 className="sp-section-title">Rekomendasi Untukmu</h2>
+                  <button className="sp-see-all">Lihat semua</button>
                 </div>
-                <div className="featured-grid">
+                <div className="sp-card-grid">
                   {featured.map(song => (
-                    <div
-                      key={song.id}
-                      className={`featured-card ${currentSong?.id === song.id ? 'featured-card-active' : ''}`}
-                      onClick={() => {
-                        if (currentSong?.id === song.id) togglePlay();
-                        else playSong(song, featured);
-                      }}
-                    >
-                      <div className="featured-cover">
-                        <img src={song.cover} alt={song.title} />
-                        <div className="featured-play-overlay">
-                          <div className="featured-play-btn">
-                            {isPlaying && currentSong?.id === song.id ? <span style={{ fontSize: 20 }}>⏸</span> : <Play size={22} fill="currentColor" />}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="featured-title">{song.title}</div>
-                      <div className="featured-artist">{song.artist}</div>
-                    </div>
+                    <Card key={song.id} song={song}
+                      isActive={currentSong?.id === song.id}
+                      isPlaying={isPlaying && currentSong?.id === song.id}
+                      onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, featured)} />
                   ))}
                 </div>
               </section>
 
               {/* Trending */}
-              <section className="app-section">
-                <div className="section-row">
-                  <h2 className="section-h2">Trending Sekarang</h2>
-                  <button className="see-all">Lihat semua <ChevronRight size={14}/></button>
+              <section className="sp-section">
+                <div className="sp-section-header">
+                  <h2 className="sp-section-title">Trending Sekarang</h2>
+                  <button className="sp-see-all">Lihat semua</button>
                 </div>
-                <div className="song-list">
-                  <SongListHeader />
-                  {trending.map((song, i) => (
-                    <SongRow
-                      key={song.id}
-                      song={song}
-                      index={i}
-                      onPlay={() => {
-                        if (currentSong?.id === song.id) togglePlay();
-                        else playSong(song, trending);
-                      }}
+                <div className="sp-card-grid">
+                  {trending.map(song => (
+                    <Card key={song.id} song={song}
                       isActive={currentSong?.id === song.id}
                       isPlaying={isPlaying && currentSong?.id === song.id}
-                      isLiked={isLiked(song.id)}
-                      onLike={() => toggleLike(song.id)}
-                    />
+                      onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, trending)} />
                   ))}
                 </div>
               </section>
 
-              {/* All songs */}
-              <section className="app-section">
-                <div className="section-row">
-                  <h2 className="section-h2">Semua Lagu</h2>
-                  <span style={{ color: 'var(--text-subdued)', fontSize: '0.875rem' }}>{songs.length} lagu</span>
+              {/* All Songs */}
+              <section className="sp-section">
+                <div className="sp-section-header">
+                  <h2 className="sp-section-title">Semua Lagu</h2>
+                  <span style={{ color: '#b3b3b3', fontSize: '0.875rem' }}>{songs.length} lagu</span>
                 </div>
-                <div className="song-list">
-                  <SongListHeader />
-                  {songs.map((song, i) => (
-                    <SongRow
-                      key={song.id}
-                      song={song}
-                      index={i}
-                      onPlay={() => {
-                        if (currentSong?.id === song.id) togglePlay();
-                        else playSong(song, songs);
-                      }}
-                      isActive={currentSong?.id === song.id}
-                      isPlaying={isPlaying && currentSong?.id === song.id}
-                      isLiked={isLiked(song.id)}
-                      onLike={() => toggleLike(song.id)}
-                    />
-                  ))}
-                </div>
+                <SongHeader />
+                {songs.map((song, i) => (
+                  <SongRow key={song.id} song={song} index={i}
+                    onPlay={() => currentSong?.id === song.id ? togglePlay() : playSong(song, songs)}
+                    isActive={currentSong?.id === song.id}
+                    isPlaying={isPlaying && currentSong?.id === song.id}
+                    isLiked={isLiked(song.id)} onLike={() => toggleLike(song.id)} />
+                ))}
               </section>
             </>
           )}
         </div>
       </main>
 
-      {/* ── RIGHT SIDEBAR ── */}
-      {isRightSidebarOpen && currentSong && !isLyricsExpanded && (
-        <NowPlayingSidebar 
-          currentSong={currentSong} 
-          onClose={() => setIsRightSidebarOpen(false)} 
-          onExpandLyrics={() => setIsLyricsExpanded(true)}
+      {/* ─── NOW PLAYING SIDEBAR ─── */}
+      {isNowPlayingOpen && currentSong && !isLyricsOpen && (
+        <NowPlayingSidebar
+          currentSong={currentSong}
+          onClose={() => setIsNowPlayingOpen(false)}
+          onExpandLyrics={openLyrics}
         />
       )}
 
-      {/* ── FULL PAGE LYRICS ── */}
-      {isLyricsExpanded && currentSong && (
-        <FullPageLyrics 
-          currentSong={currentSong} 
-          onClose={() => setIsLyricsExpanded(false)} 
-        />
+      {/* ─── FULL SCREEN LYRICS ─── */}
+      {isLyricsOpen && currentSong && (
+        <FullPageLyrics currentSong={currentSong} onClose={closeLyrics} />
       )}
 
-      {/* ── PLAYER BAR ── */}
+      {/* ─── PLAYER BAR ─── */}
       {currentSong && (
-        <div className="player-bar">
-          {/* Mobile: thin progress bar strip */}
-          <div className="mobile-progress">
-            <div
-              className="mobile-progress-fill"
-              style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-            />
+        <div className="sp-player">
+          {/* Mobile only: progress + mini strip */}
+          <div className="sp-mobile-progress-bar"
+            onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
+            <div className="sp-mobile-progress-fill" style={{ width: `${pct}%` }} />
           </div>
-
-          {/* Mobile: mini strip with cover + play button */}
-          <div className="player-mini-strip">
-            <img src={currentSong.cover} alt={currentSong.title} className="player-bar-cover" />
-            <div className="player-bar-meta">
-              <div className="player-bar-title">{currentSong.title}</div>
-              <div className="player-bar-artist">{currentSong.artist}</div>
+          <div className="sp-player-mini">
+            <img src={currentSong.cover} className="sp-player-cover" alt="" />
+            <div className="sp-player-meta">
+              <div className="sp-player-title">{currentSong.title}</div>
+              <div className="sp-player-artist">{currentSong.artist}</div>
             </div>
-            <button className="bar-ctrl-play" onClick={togglePlay}>
-              {isPlaying ? <Pause size={18} fill="currentColor" /> : <Play size={18} fill="currentColor" />}
+            <button className="sp-ctrl-play sp-ctrl" style={{ width: 32, height: 32 }} onClick={togglePlay}>
+              {isPlaying ? <Pause size={16} fill="currentColor" /> : <Play size={16} fill="currentColor" />}
             </button>
-            <button className="bar-ctrl" onClick={handleNext} style={{ background: 'none', border: 'none', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center' }}>
-              <SkipForward size={20} />
-            </button>
+            <button className="sp-ctrl" onClick={handleNext}><SkipForward size={20} /></button>
           </div>
 
-          {/* Track info (desktop) */}
-          <div 
-            className="player-bar-track" 
-            onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
-            style={{ cursor: 'pointer' }}
-          >
-            <img src={currentSong.cover} alt={currentSong.title} className="player-bar-cover" />
-            <div className="player-bar-meta">
-              <div className="player-bar-title">{currentSong.title}</div>
-              <div className="player-bar-artist">{currentSong.artist}</div>
+          {/* Left: track info (desktop) */}
+          <div className="sp-player-track" onClick={() => setIsNowPlayingOpen(!isNowPlayingOpen)}>
+            <img src={currentSong.cover} alt={currentSong.title} className="sp-player-cover" />
+            <div className="sp-player-meta">
+              <div className="sp-player-title">{currentSong.title}</div>
+              <div className="sp-player-artist">{currentSong.artist}</div>
             </div>
             <button
-              className={`player-bar-heart ${isLiked(currentSong.id) ? 'liked' : ''}`}
-              onClick={() => toggleLike(currentSong.id)}
+              className={`sp-player-heart ${isLiked(currentSong.id) ? 'liked' : ''}`}
+              onClick={e => { e.stopPropagation(); toggleLike(currentSong.id); }}
             >
-              <Heart size={18} fill={isLiked(currentSong.id) ? 'currentColor' : 'none'} />
+              <Heart size={16} fill={isLiked(currentSong.id) ? 'currentColor' : 'none'} />
             </button>
           </div>
 
-          {/* Controls (desktop) */}
-          <div className="player-bar-center">
-            <div className="player-bar-controls">
-              <button
-                className={`bar-ctrl ${isShuffled ? 'bar-ctrl-active' : ''}`}
-                onClick={toggleShuffle}
-              ><Shuffle size={16}/></button>
-              <button className="bar-ctrl" onClick={handlePrev}><SkipBack size={18}/></button>
-              <button className="bar-ctrl-play" onClick={togglePlay}>
-                {isPlaying
-                  ? <Pause size={20} fill="currentColor" />
-                  : <Play size={20} fill="currentColor" />
-                }
+          {/* Center: controls (desktop) */}
+          <div className="sp-player-center">
+            <div className="sp-player-btns">
+              <button className={`sp-ctrl ${isShuffled ? 'active' : ''}`} onClick={toggleShuffle}>
+                <Shuffle size={16} />
               </button>
-              <button className="bar-ctrl" onClick={handleNext}><SkipForward size={18}/></button>
-              <button
-                className={`bar-ctrl ${repeatMode !== 'none' ? 'bar-ctrl-active' : ''}`}
-                onClick={toggleRepeat}
-              >
-                <Repeat size={16}/>
-                {repeatMode === 'one' && <span className="repeat-one-badge">1</span>}
+              <button className="sp-ctrl" onClick={handlePrev}><SkipBack size={18} /></button>
+              <button className="sp-ctrl sp-ctrl-play" onClick={togglePlay}>
+                {isPlaying ? <Pause size={20} fill="currentColor" /> : <Play size={20} fill="currentColor" />}
+              </button>
+              <button className="sp-ctrl" onClick={handleNext}><SkipForward size={18} /></button>
+              <button className={`sp-ctrl ${repeatMode !== 'none' ? 'active' : ''}`} onClick={toggleRepeat}>
+                <Repeat size={16} />
+                {repeatMode === 'one' && (
+                  <span style={{ position: 'absolute', bottom: -4, right: -2, fontSize: '0.55rem', fontWeight: 900, color: 'var(--sp-green)' }}>1</span>
+                )}
               </button>
             </div>
-            <div className="player-bar-progress">
-              <span className="bar-time">{formatTime(currentTime)}</span>
-              <div
-                className="bar-progress-bg"
-                onClick={e => {
-                  const rect = e.currentTarget.getBoundingClientRect();
-                  seekTo(((e.clientX - rect.left) / rect.width) * duration);
-                }}
-              >
-                <div
-                  className="bar-progress-fill"
-                  style={{ width: `${duration ? (currentTime / duration) * 100 : 0}%` }}
-                />
+
+            <div className="sp-progress">
+              <span className="sp-time">{fmt(currentTime)}</span>
+              <div className="sp-progress-track"
+                onClick={e => { const r = e.currentTarget.getBoundingClientRect(); seekTo((e.clientX - r.left) / r.width * duration); }}>
+                <div className="sp-progress-fill" style={{ width: `${pct}%` }} />
               </div>
-              <span className="bar-time">{formatTime(duration)}</span>
+              <span className="sp-time">{fmt(duration)}</span>
             </div>
           </div>
 
-          {/* Volume (desktop) */}
-          <div className="player-bar-volume">
-            <Mic2 
-              size={18} 
-              className="bar-ctrl" 
-              style={{ color: isRightSidebarOpen ? 'var(--accent)' : 'var(--text-subdued)', marginRight: 16, cursor: 'pointer' }} 
-              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)} 
-            />
-            <Volume2 size={16} style={{ color: 'var(--text-subdued)', flexShrink: 0 }} />
+          {/* Right: volume + lyrics toggle (desktop) */}
+          <div className="sp-player-right">
+            <button
+              className={`sp-lyrics-toggle ${isNowPlayingOpen ? 'active' : ''}`}
+              onClick={() => setIsNowPlayingOpen(!isNowPlayingOpen)}
+              title="Now Playing View"
+            >
+              <Mic2 size={16} />
+            </button>
+            <Volume2 size={16} className="sp-vol-icon" />
             <input
-              type="range"
-              min={0} max={1} step={0.01}
-              value={volume}
+              type="range" min={0} max={1} step={0.01} value={volume}
               onChange={e => setVolume(parseFloat(e.target.value))}
-              className="volume-slider"
+              className="sp-volume-slider"
             />
           </div>
         </div>
       )}
 
-      {/* ── MOBILE BOTTOM NAV ── */}
-      <nav className="mobile-bottom-nav">
-        <button
-          className={`mobile-nav-btn ${activeNav === 'home' ? 'active' : ''}`}
-          onClick={() => setActiveNav('home')}
-        >
-          <Home size={22} />
-          <span>Beranda</span>
-        </button>
-        <button
-          className={`mobile-nav-btn ${activeNav === 'search' ? 'active' : ''}`}
-          onClick={() => setActiveNav('search')}
-        >
-          <Search size={22} />
-          <span>Cari</span>
-        </button>
-        <button
-          className={`mobile-nav-btn ${activeNav === 'liked' ? 'active' : ''}`}
-          onClick={() => setActiveNav('liked')}
-        >
-          <Heart size={22} />
-          <span>Disukai</span>
-        </button>
-        <button
-          className={`mobile-nav-btn ${activeNav === 'playlist' ? 'active' : ''}`}
-          onClick={() => setActiveNav('playlist')}
-        >
-          <ListMusic size={22} />
-          <span>Playlist</span>
-        </button>
+      {/* ─── MOBILE BOTTOM NAV ─── */}
+      <nav className="sp-mobile-bottom-nav">
+        {[
+          { key: 'home',   icon: <Home size={22} />,      label: 'Beranda' },
+          { key: 'search', icon: <Search size={22} />,    label: 'Cari' },
+          { key: 'liked',  icon: <Heart size={22} />,     label: 'Disukai' },
+        ].map(({ key, icon, label }) => (
+          <button key={key} className={`sp-mobile-nav-btn ${activeNav === key ? 'active' : ''}`}
+            onClick={() => setActiveNav(key)}>
+            {icon}
+            <span>{label}</span>
+          </button>
+        ))}
       </nav>
     </div>
   );
-};
-
-// ── Song List Header Component ──
-const SongListHeader = () => (
-  <div className="song-row song-list-header">
-    <div className="song-row-num">#</div>
-    <div className="song-row-info" style={{ paddingLeft: 16 }}>Judul</div>
-    <div className="song-row-album">Album</div>
-    <div className="song-row-plays">Diputar</div>
-    <div className="song-row-heart"></div>
-    <div className="song-row-duration" style={{ display: 'flex', justifyContent: 'flex-end', paddingRight: 8 }}>
-      <Clock size={16} />
-    </div>
-  </div>
-);
-
-// ── Song Row Component ──
-const SongRow = ({ song, index, onPlay, isActive, isPlaying, isLiked, onLike }) => (
-  <div className={`song-row ${isActive ? 'song-row-active' : ''}`} onClick={onPlay}>
-    <div className="song-row-num">
-      {isPlaying
-        ? <span className="song-row-wave"><span/><span/><span/></span>
-        : (
-          <>
-            <span className="song-row-index" style={{ color: isActive ? 'var(--accent)' : 'inherit' }}>{index + 1}</span>
-            <span className="song-row-play">
-              {isActive && !isPlaying ? <span style={{ fontSize: 14 }}>▶</span> : <Play size={14} fill="currentColor" />}
-            </span>
-          </>
-        )
-      }
-    </div>
-    <img src={song.cover} alt={song.title} className="song-row-cover" />
-    <div className="song-row-info">
-      <div className="song-row-title">{song.title}</div>
-      <div className="song-row-artist">{song.artist}</div>
-    </div>
-    <div className="song-row-album">{song.album}</div>
-    <div className="song-row-plays">{formatPlays(song.plays)}</div>
-    <button
-      className={`song-row-heart ${isLiked ? 'liked' : ''}`}
-      onClick={e => { e.stopPropagation(); onLike(); }}
-    >
-      <Heart size={16} fill={isLiked ? 'currentColor' : 'none'} />
-    </button>
-    <div className="song-row-duration">
-      {Math.floor(song.duration / 60)}:{String(song.duration % 60).padStart(2, '0')}
-    </div>
-  </div>
-);
-
-const getGreeting = () => {
-  const h = new Date().getHours();
-  if (h < 12) return 'Selamat pagi';
-  if (h < 17) return 'Selamat siang';
-  if (h < 21) return 'Selamat sore';
-  return 'Selamat malam';
 };
 
 export default AppPage;

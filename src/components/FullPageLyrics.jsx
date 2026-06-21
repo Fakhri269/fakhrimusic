@@ -1,24 +1,19 @@
-import React, { useEffect, useRef, useState, useCallback } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { ChevronDown } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
 
-// Parse LRC format: "[mm:ss.xx] line text"
 function parseLRC(lrcText) {
   if (!lrcText) return [];
-  const lines = lrcText.split('\n');
-  const parsed = [];
-  for (const line of lines) {
-    const match = line.match(/^\[(\d+):(\d+\.\d+)\]\s*(.*)/);
-    if (match) {
-      const minutes = parseInt(match[1], 10);
-      const seconds = parseFloat(match[2]);
-      const text = match[3].trim();
-      if (text) {
-        parsed.push({ time: minutes * 60 + seconds, text });
-      }
-    }
-  }
-  return parsed.sort((a, b) => a.time - b.time);
+  return lrcText.split('\n')
+    .map(line => {
+      const m = line.match(/^\[(\d+):(\d+\.\d+)\]\s*(.*)/);
+      if (!m) return null;
+      const text = m[3].trim();
+      if (!text) return null;
+      return { time: parseInt(m[1]) * 60 + parseFloat(m[2]), text };
+    })
+    .filter(Boolean)
+    .sort((a, b) => a.time - b.time);
 }
 
 const FullPageLyrics = ({ currentSong, onClose }) => {
@@ -26,34 +21,27 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
   const [lyricsData, setLyricsData] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeLine, setActiveLine] = useState(0);
-  const activeLineRef = useRef(null);
-  const containerRef = useRef(null);
+  const activeRef = useRef(null);
 
-  // Fetch synced lyrics from LRCLIB
   useEffect(() => {
     if (!currentSong) return;
     setLoading(true);
     setLyricsData([]);
     setActiveLine(0);
-
-    // Parse artist: strip features like "ft. XXX"
-    const artistClean = currentSong.artist.split(/ft\.|feat\.| & /i)[0].trim();
-    const url = `https://lrclib.net/api/search?track_name=${encodeURIComponent(currentSong.title)}&artist_name=${encodeURIComponent(artistClean)}`;
-
-    fetch(url)
+    const artist = currentSong.artist.split(/ft\.|feat\.| & /i)[0].trim();
+    fetch(`https://lrclib.net/api/search?track_name=${encodeURIComponent(currentSong.title)}&artist_name=${encodeURIComponent(artist)}`)
       .then(r => r.json())
       .then(results => {
-        if (results && results.length > 0) {
-          // Prefer results with syncedLyrics
+        if (results?.length > 0) {
           const synced = results.find(r => r.syncedLyrics);
-          if (synced && synced.syncedLyrics) {
+          if (synced?.syncedLyrics) {
             setLyricsData(parseLRC(synced.syncedLyrics));
           } else if (results[0].plainLyrics) {
-            // Fallback: plain lyrics (no timestamps)
-            const plain = results[0].plainLyrics.split('\n')
-              .filter(l => l.trim())
-              .map((text, i) => ({ time: i * 4, text }));
-            setLyricsData(plain);
+            setLyricsData(
+              results[0].plainLyrics.split('\n')
+                .filter(l => l.trim())
+                .map((text, i) => ({ time: i * 4, text }))
+            );
           }
         }
         setLoading(false);
@@ -72,54 +60,56 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
     setActiveLine(idx);
   }, [currentTime, lyricsData]);
 
-  // Auto-scroll active line into view
+  // Auto-scroll
   useEffect(() => {
-    if (activeLineRef.current) {
-      activeLineRef.current.scrollIntoView({
-        behavior: 'smooth',
-        block: 'center',
-      });
-    }
+    activeRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
   }, [activeLine]);
 
   if (!currentSong) return null;
 
   return (
-    <div className="full-page-lyrics">
-      <div
-        className="fpl-background"
-        style={{ backgroundImage: `url(${currentSong.cover})` }}
-      />
+    <div className="sp-fpl">
+      <div className="sp-fpl-bg" style={{ backgroundImage: `url(${currentSong.cover})` }} />
+      <div className="sp-fpl-overlay" />
 
-      <div className="fpl-content">
-        {/* Left: Album info */}
-        <div className="fpl-left">
-          <div className="fpl-header">
-            <button className="fpl-close-btn" onClick={onClose} aria-label="Minimize">
-              <ChevronDown size={24} />
-            </button>
-            <div>
-              <div style={{ fontWeight: 800, fontSize: '1.1rem' }}>{currentSong.title}</div>
-              <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.9rem' }}>{currentSong.artist}</div>
-            </div>
+      {/* Topbar */}
+      <div className="sp-fpl-topbar">
+        <div className="sp-fpl-topbar-info">
+          <img src={currentSong.cover} alt="" className="sp-fpl-mini-cover" />
+          <div>
+            <div className="sp-fpl-topbar-title">{currentSong.title}</div>
+            <div className="sp-fpl-topbar-artist">{currentSong.artist}</div>
           </div>
-          <img src={currentSong.cover} alt={currentSong.title} className="fpl-cover" />
+        </div>
+        <button className="sp-fpl-close" onClick={onClose}>
+          <ChevronDown size={24} />
+        </button>
+      </div>
+
+      <div className="sp-fpl-body">
+        {/* Left: album + info */}
+        <div className="sp-fpl-left">
+          <img src={currentSong.cover} alt={currentSong.title} className="sp-fpl-album" />
+          <div className="sp-fpl-track-info">
+            <div className="sp-fpl-track-title">{currentSong.title}</div>
+            <div className="sp-fpl-track-artist">{currentSong.artist}</div>
+          </div>
         </div>
 
-        {/* Right: Synced Lyrics */}
-        <div className="fpl-right" ref={containerRef}>
-          <div className="fpl-lyrics-label">Lyrics</div>
+        {/* Right: synced lyrics */}
+        <div className="sp-fpl-right">
+          <div className="sp-fpl-lyrics-label">Lyrics</div>
           {loading ? (
-            <div className="fpl-loading">Memuat lirik...</div>
+            <div className="sp-fpl-loading">Memuat lirik...</div>
           ) : lyricsData.length === 0 ? (
-            <div className="fpl-loading">Lirik tidak ditemukan untuk lagu ini.</div>
+            <div className="sp-fpl-loading">Lirik tidak ditemukan untuk lagu ini.</div>
           ) : (
-            <div className="fpl-lyrics-container">
-              {lyricsData.map((line, index) => (
+            <div className="sp-fpl-lines">
+              {lyricsData.map((line, i) => (
                 <div
-                  key={index}
-                  ref={index === activeLine ? activeLineRef : null}
-                  className={`fpl-line ${index === activeLine ? 'active' : ''}`}
+                  key={i}
+                  ref={i === activeLine ? activeRef : null}
+                  className={`sp-fpl-line ${i === activeLine ? 'active' : ''}`}
                 >
                   {line.text}
                 </div>
