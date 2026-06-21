@@ -138,18 +138,22 @@ export const MusicProvider = ({ children }) => {
         finalYoutubeId = localMatch.youtubeId;
         songToPlay.youtubeId = finalYoutubeId;
       } else {
-        // 2. Try the dev backend (will fail gracefully in production)
+        // 2. Fetch from YouTube using allorigins proxy and extract the first video ID
         try {
-          const res = await fetch(`/api/yt-search?q=${encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio')}`);
+          const query = encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio');
+          const proxyUrl = `https://api.allorigins.win/raw?url=https://m.youtube.com/results?search_query=${query}`;
+          const res = await fetch(proxyUrl);
           if (res.ok) {
-            const data = await res.json();
-            if (data && data.length > 0) {
-              finalYoutubeId = data[0].videoId;
+            const html = await res.text();
+            // Match the first YouTube video ID
+            const match = html.match(/watch\?v=([a-zA-Z0-9_-]{11})/);
+            if (match && match[1]) {
+              finalYoutubeId = match[1];
               songToPlay.youtubeId = finalYoutubeId;
             }
           }
         } catch (err) {
-          console.warn("Backend yt-search is not available in static mode.");
+          console.warn("YouTube search proxy failed.");
         }
       }
     }
