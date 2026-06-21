@@ -27,6 +27,7 @@ export const MusicProvider = ({ children }) => {
 
   const playerRef = useRef(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
+  const isPlayerReadyRef = useRef(false);
 
   // Initialize YouTube IFrame API
   useEffect(() => {
@@ -64,6 +65,7 @@ export const MusicProvider = ({ children }) => {
         events: {
           onReady: () => {
             setIsPlayerReady(true);
+            isPlayerReadyRef.current = true;
             playerRef.current.setVolume(volume * 100);
           },
           onStateChange: (event) => {
@@ -120,8 +122,8 @@ export const MusicProvider = ({ children }) => {
     }
   }, [volume, isMuted, isPlayerReady]);
 
-  const loadAndPlayYoutubeVideo = async (songToPlay) => {
-    if (!isPlayerReady || !playerRef.current) return;
+  const loadAndPlayYoutubeVideo = useCallback(async (songToPlay) => {
+    if (!isPlayerReadyRef.current || !playerRef.current) return;
     
     setCurrentSong(songToPlay);
     setIsPlaying(false); // Pause while loading
@@ -159,39 +161,35 @@ export const MusicProvider = ({ children }) => {
     }
 
     if (!finalYoutubeId) {
-      alert(`Maaf, lagu "${songToPlay.title}" tidak dapat diputar pada versi demo statis ini karena backend pencarian YouTube dinonaktifkan.`);
+      alert(`Maaf, lagu "${songToPlay.title}" tidak dapat diputar.`);
       setIsPlaying(false);
       return;
     }
 
-    if (finalYoutubeId && playerRef.current) {
-      playerRef.current.loadVideoById({
-        videoId: finalYoutubeId,
-        startSeconds: songToPlay.startSeconds || 0
-      });
-      playerRef.current.playVideo();
-      setIsPlaying(true);
-    }
-  };
+    playerRef.current.loadVideoById({
+      videoId: finalYoutubeId,
+      startSeconds: songToPlay.startSeconds || 0
+    });
+    playerRef.current.playVideo();
+    setIsPlaying(true);
+  }, []);
 
   const playSong = useCallback(
     (song, playlist = null) => {
-      if (!isPlayerReady) return;
+      if (!isPlayerReadyRef.current) return;
       
       if (playlist) {
         setQueue(playlist);
         const idx = playlist.findIndex((s) => s.id === song.id);
         setQueueIndex(idx >= 0 ? idx : 0);
       } else {
-        if (!queue.find((s) => s.id === song.id)) {
-          setQueue([song]);
-          setQueueIndex(0);
-        }
+        setQueue([song]);
+        setQueueIndex(0);
       }
       
       loadAndPlayYoutubeVideo(song);
     },
-    [queue, isPlayerReady]
+    [loadAndPlayYoutubeVideo]
   );
 
   const togglePlay = useCallback(() => {

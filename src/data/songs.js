@@ -10,7 +10,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 1500000000,
     liked: true,
-    youtubeId: "tQ0yjYUFKAE"
+    youtubeId: "ay9y3CTkT40"
   },
   {
     id: 2,
@@ -23,7 +23,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2800000000,
     liked: false,
-    youtubeId: "kTJczUoc26U"
+    youtubeId: "rkYlZnIbe2E"
   },
   {
     id: 3,
@@ -36,7 +36,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 900000000,
     liked: false,
-    youtubeId: "Fp8msa5uYsc"
+    youtubeId: "KRUWn3dLoRg"
   },
   {
     id: 4,
@@ -49,7 +49,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2100000000,
     liked: true,
-    youtubeId: "eY_mrU8ISfI"
+    youtubeId: "WJUe3mr2gNM"
   },
   {
     id: 5,
@@ -62,7 +62,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3500000000,
     liked: false,
-    youtubeId: "e-ORhEE9VVg"
+    youtubeId: "2mIBS3fHp6A"
   },
   {
     id: 6,
@@ -88,7 +88,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2800000000,
     liked: false,
-    youtubeId: "LjhCEhWiKXk"
+    youtubeId: "E-UJTGXof6Q"
   },
   {
     id: 8,
@@ -101,7 +101,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 1500000000,
     liked: false,
-    youtubeId: "e-fA-gBCkj0"
+    youtubeId: "QTRaN-82Ip4"
   },
   {
     id: 9,
@@ -114,7 +114,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3800000000,
     liked: true,
-    youtubeId: "4NRXx6U8ABQ"
+    youtubeId: "fHI8X4OXluQ"
   },
   {
     id: 10,
@@ -127,7 +127,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2500000000,
     liked: false,
-    youtubeId: "34Na4j8HLjc"
+    youtubeId: "Rif-RTvmmss"
   },
   {
     id: 11,
@@ -140,7 +140,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 120000000,
     liked: false,
-    youtubeId: "fL1J0W1cOfw"
+    youtubeId: "gIsoLyQX7W8"
   },
   {
     id: 12,
@@ -153,7 +153,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 350000000,
     liked: true,
-    youtubeId: "XUe_8JvA5u0"
+    youtubeId: "_N6vSc_mT6I"
   },
   {
     id: 13,
@@ -166,7 +166,7 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 280000000,
     liked: false,
-    youtubeId: "mN3rOTZzvoI"
+    youtubeId: "bDqyNUyIt-0"
   },
   {
     id: 14,
@@ -192,6 +192,6 @@ export const songs = [
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3600000000,
     liked: true,
-    youtubeId: "JGwWNGJdvx8"
+    youtubeId: "_dK2tDK9grQ"
   }
 ];
