@@ -304,6 +304,80 @@ const AppPage = () => {
             </section>
           )}
 
+          {/* ── PROFILE VIEW ── */}
+          {activeNav === 'profile' && (
+            <section className="sp-section sp-profile-section">
+              {/* Profile Header */}
+              <div className="sp-profile-header">
+                <div className="sp-profile-avatar-wrap">
+                  {user?.photoURL
+                    ? <img src={user.photoURL} alt="" className="sp-profile-avatar" />
+                    : <div className="sp-profile-avatar-ph"><User size={40} /></div>
+                  }
+                </div>
+                <div className="sp-profile-name">{user?.displayName || 'Pendengar'}</div>
+                <div className="sp-profile-email">{user?.email}</div>
+                <div className="sp-profile-badges">
+                  <span className="sp-profile-badge">Free Plan</span>
+                  <span className="sp-profile-badge sp-profile-badge-green">{likedList.length} Lagu Disukai</span>
+                </div>
+              </div>
+
+              {/* Stats */}
+              <div className="sp-profile-stats">
+                <div className="sp-profile-stat">
+                  <div className="sp-profile-stat-num">{likedList.length}</div>
+                  <div className="sp-profile-stat-label">Disukai</div>
+                </div>
+                <div className="sp-profile-stat-divider" />
+                <div className="sp-profile-stat">
+                  <div className="sp-profile-stat-num">{songs.length}</div>
+                  <div className="sp-profile-stat-label">Lagu</div>
+                </div>
+                <div className="sp-profile-stat-divider" />
+                <div className="sp-profile-stat">
+                  <div className="sp-profile-stat-num">1</div>
+                  <div className="sp-profile-stat-label">Playlist</div>
+                </div>
+              </div>
+
+              {/* Menu Items */}
+              <div className="sp-profile-menu">
+                <div className="sp-profile-menu-title">Akun</div>
+                {[
+                  { icon: <Heart size={20} />, label: 'Lagu Disukai', action: () => setActiveNav('liked') },
+                  { icon: <ListMusic size={20} />, label: 'Playlist Saya', action: () => setActiveNav('playlist') },
+                  { icon: <Radio size={20} />, label: 'Riwayat Diputar', action: () => {} },
+                ].map(({ icon, label, action }) => (
+                  <button key={label} className="sp-profile-menu-item" onClick={action}>
+                    <span className="sp-profile-menu-icon">{icon}</span>
+                    <span className="sp-profile-menu-label">{label}</span>
+                    <ChevronRight size={18} className="sp-profile-menu-arrow" />
+                  </button>
+                ))}
+              </div>
+
+              <div className="sp-profile-menu" style={{ marginTop: 12 }}>
+                <div className="sp-profile-menu-title">Tentang</div>
+                {[
+                  { icon: <Music2 size={20} />, label: 'FakhriMusic v1.0', action: () => {} },
+                ].map(({ icon, label, action }) => (
+                  <button key={label} className="sp-profile-menu-item" onClick={action}>
+                    <span className="sp-profile-menu-icon">{icon}</span>
+                    <span className="sp-profile-menu-label">{label}</span>
+                    <ChevronRight size={18} className="sp-profile-menu-arrow" />
+                  </button>
+                ))}
+              </div>
+
+              {/* Logout */}
+              <button className="sp-profile-logout-btn" onClick={handleLogout}>
+                <LogOut size={20} />
+                Keluar dari Akun
+              </button>
+            </section>
+          )}
+
           {/* ── HOME VIEW ── */}
           {activeNav === 'home' && (
             <>
@@ -477,9 +551,10 @@ const AppPage = () => {
       {/* ─── MOBILE BOTTOM NAV ─── */}
       <nav className="sp-mobile-bottom-nav">
         {[
-          { key: 'home',   icon: <Home size={22} />,      label: 'Beranda' },
-          { key: 'search', icon: <Search size={22} />,    label: 'Cari' },
-          { key: 'liked',  icon: <Heart size={22} />,     label: 'Disukai' },
+          { key: 'home',    icon: <Home size={22} />,    label: 'Beranda' },
+          { key: 'search',  icon: <Search size={22} />,  label: 'Cari' },
+          { key: 'liked',   icon: <Heart size={22} />,   label: 'Disukai' },
+          { key: 'profile', icon: <User size={22} />,    label: 'Profil' },
         ].map(({ key, icon, label }) => (
           <button key={key} className={`sp-mobile-nav-btn ${activeNav === key ? 'active' : ''}`}
             onClick={() => setActiveNav(key)}>
