@@ -7,6 +7,7 @@ import {
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
+import NowPlayingSidebar from '../components/NowPlayingSidebar';
 
 const formatTime = (s) => {
   if (!s || isNaN(s)) return '0:00';
@@ -34,6 +35,7 @@ const AppPage = () => {
 
   const [activeNav, setActiveNav] = useState('home');
   const [search, setSearch] = useState('');
+  const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -282,11 +284,20 @@ const AppPage = () => {
         </div>
       </main>
 
+      {/* ── RIGHT SIDEBAR ── */}
+      {isRightSidebarOpen && currentSong && (
+        <NowPlayingSidebar currentSong={currentSong} onClose={() => setIsRightSidebarOpen(false)} />
+      )}
+
       {/* ── PLAYER BAR ── */}
       {currentSong && (
         <div className="player-bar">
           {/* Track info */}
-          <div className="player-bar-track">
+          <div 
+            className="player-bar-track" 
+            onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)}
+            style={{ cursor: 'pointer' }}
+          >
             <img src={currentSong.cover} alt={currentSong.title} className="player-bar-cover" />
             <div className="player-bar-meta">
               <div className="player-bar-title">{currentSong.title}</div>
@@ -343,6 +354,12 @@ const AppPage = () => {
 
           {/* Volume */}
           <div className="player-bar-volume">
+            <Mic2 
+              size={18} 
+              className="bar-ctrl" 
+              style={{ color: isRightSidebarOpen ? 'var(--accent)' : 'var(--text-subdued)', marginRight: 16, cursor: 'pointer' }} 
+              onClick={() => setIsRightSidebarOpen(!isRightSidebarOpen)} 
+            />
             <Volume2 size={16} style={{ color: 'var(--text-subdued)', flexShrink: 0 }} />
             <input
               type="range"
