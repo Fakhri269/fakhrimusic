@@ -67,7 +67,7 @@ export const songs = [
     genre: "Pop",
     duration: 178,
     cover: "https://upload.wikimedia.org/wikipedia/en/c/cd/Taylor_Swift_-_Lover.png",
-    youtubeId: "ic8j13piAhQ",
+    youtubeId: "GrKQvyXpNgc",
     plays: 1200000000,
     liked: true
   },
@@ -115,7 +115,7 @@ export const songs = [
     genre: "R&B",
     duration: 230,
     cover: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png",
-    youtubeId: "34Na4j8HLjc",
+    youtubeId: "34Na4j8AVgA",
     plays: 2500000000,
     liked: false
   },
@@ -127,7 +127,7 @@ export const songs = [
     genre: "Indie Pop",
     duration: 302,
     cover: "https://i.scdn.co/image/ab67616d0000b273413cb17277c7f3e8b0105dfd",
-    youtubeId: "c4y4s07fA-Q",
+    youtubeId: "gIsoLyQX7W8",
     plays: 120000000,
     liked: false
   },
@@ -139,7 +139,7 @@ export const songs = [
     genre: "Pop",
     duration: 242,
     cover: "https://upload.wikimedia.org/wikipedia/id/f/fb/Tulus_Manusia.jpeg",
-    youtubeId: "uM2Z3-rB2iA",
+    youtubeId: "9II3OGZETo4",
     plays: 350000000,
     liked: true
   },
@@ -151,7 +151,7 @@ export const songs = [
     genre: "Pop",
     duration: 243,
     cover: "https://upload.wikimedia.org/wikipedia/id/3/36/Sial_-_Mahalini.jpg",
-    youtubeId: "a6E8vRk_G1w",
+    youtubeId: "QSWYyoF79oE",
     plays: 280000000,
     liked: false
   },
