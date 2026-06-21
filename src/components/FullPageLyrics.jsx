@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { ChevronDown, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat } from 'lucide-react';
+import { ChevronDown, ChevronLeft, Play, Pause, SkipBack, SkipForward, Shuffle, Repeat, Music } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
 
 function fmt(s) {
@@ -11,7 +11,7 @@ function fmt(s) {
 
 function parseLRC(lrcText) {
   if (!lrcText) return [];
-  return lrcText.split('\n')
+  const lines = lrcText.split('\n')
     .map(line => {
       const m = line.match(/^\[(\d+):(\d+\.\d+)\]\s*(.*)/);
       if (!m) return null;
@@ -21,6 +21,25 @@ function parseLRC(lrcText) {
     })
     .filter(Boolean)
     .sort((a, b) => a.time - b.time);
+
+  if (lines.length === 0) return [];
+
+  const processed = [];
+  // Intro interlude marker if gap > 5 seconds
+  if (lines[0].time > 5) {
+    processed.push({ time: 0, text: "", isInterlude: true });
+  }
+
+  for (let i = 0; i < lines.length - 1; i++) {
+    processed.push(lines[i]);
+    const gap = lines[i+1].time - lines[i].time;
+    // Insert interlude if gap between words is > 15 seconds
+    if (gap > 15) {
+      processed.push({ time: lines[i].time + 5, text: "", isInterlude: true });
+    }
+  }
+  processed.push(lines[lines.length - 1]);
+  return processed;
 }
 
 const FullPageLyrics = ({ currentSong, onClose }) => {
@@ -86,7 +105,7 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
         {/* 1. Topbar */}
         <div className="sp-fpl-topbar">
           <button className="sp-fpl-close-btn" onClick={onClose}>
-            <ChevronDown size={28} />
+            <ChevronLeft size={28} />
           </button>
           <div className="sp-fpl-top-text">PLAYING FROM SEARCH</div>
           <div style={{ width: 28 }} />
@@ -151,7 +170,7 @@ const FullPageLyrics = ({ currentSong, onClose }) => {
                     className={`sp-fpl-line ${i === activeLine ? 'active' : ''}`}
                     onClick={() => seekTo(line.time)}
                   >
-                    {line.text}
+                    {line.isInterlude ? <Music size={32} /> : line.text}
                   </div>
                 ))}
               </div>

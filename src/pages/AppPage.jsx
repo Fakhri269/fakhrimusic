@@ -3,7 +3,8 @@ import { useNavigate } from 'react-router-dom';
 import {
   Music2, Search, Home, Heart, ListMusic, LogOut, Play, Pause,
   SkipBack, SkipForward, Shuffle, Repeat, Volume2, VolumeX,
-  ChevronRight, Mic2, Library, Plus, Radio, TrendingUp, User, Clock, X
+  ChevronRight, Mic2, Library, Plus, Radio, TrendingUp, User, Clock, X,
+  Trophy, Sparkles, Podcast, Zap, Flame, Guitar
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
@@ -29,12 +30,12 @@ const getGreeting = () => {
 };
 
 const QUICK = [
-  { color: '#e91429', bg: '#450d10', label: 'Top Charts', icon: '🏆' },
-  { color: '#1e3264', bg: '#0d1b38', label: 'New Releases', icon: '🎵' },
-  { color: '#8d67ab', bg: '#2a1a3d', label: 'Podcasts', icon: '🎙️' },
-  { color: '#e8115b', bg: '#45062e', label: 'Pop', icon: '⚡' },
-  { color: '#1e8c45', bg: '#0a2e18', label: 'Hip-Hop', icon: '🔥' },
-  { color: '#ba5d07', bg: '#3d1e02', label: 'R&B', icon: '🎸' },
+  { color: '#e91429', bg: '#450d10', label: 'Top Charts', icon: <Trophy size={20} /> },
+  { color: '#1e3264', bg: '#0d1b38', label: 'New Releases', icon: <Sparkles size={20} /> },
+  { color: '#8d67ab', bg: '#2a1a3d', label: 'Podcasts', icon: <Podcast size={20} /> },
+  { color: '#e8115b', bg: '#45062e', label: 'Pop', icon: <Zap size={20} /> },
+  { color: '#1e8c45', bg: '#0a2e18', label: 'Hip-Hop', icon: <Flame size={20} /> },
+  { color: '#ba5d07', bg: '#3d1e02', label: 'R&B', icon: <Guitar size={20} /> },
 ];
 
 // ── Song Row ──────────────────────────────────────────────────────────────
