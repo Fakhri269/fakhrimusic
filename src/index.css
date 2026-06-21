@@ -36,7 +36,6 @@ body {
   background: var(--sp-black);
   color: var(--sp-white);
   -webkit-font-smoothing: antialiased;
-  overflow: hidden;
 }
 button { font-family: inherit; cursor: pointer; border: none; background: none; color: inherit; }
 input  { font-family: inherit; }

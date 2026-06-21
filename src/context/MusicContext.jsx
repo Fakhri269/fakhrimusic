@@ -5,7 +5,13 @@ const MusicContext = createContext(null);
 
 export const MusicProvider = ({ children }) => {
   const [songs, setSongs] = useState(initialSongs);
-  const [currentSong, setCurrentSong] = useState(null);
+  const [currentSong, setCurrentSongState] = useState(null);
+  const currentSongRef = useRef(null);
+
+  const setCurrentSong = (song) => {
+    setCurrentSongState(song);
+    currentSongRef.current = song;
+  };
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
   const [duration, setDuration] = useState(0);
@@ -91,8 +97,12 @@ export const MusicProvider = ({ children }) => {
     if (isPlaying && isPlayerReady) {
       interval = setInterval(() => {
         if (playerRef.current && playerRef.current.getCurrentTime) {
-          setCurrentTime(playerRef.current.getCurrentTime());
-          setDuration(playerRef.current.getDuration());
+          const offset = currentSongRef.current?.startSeconds || 0;
+          const rawTime = playerRef.current.getCurrentTime() || 0;
+          const rawDuration = playerRef.current.getDuration() || 0;
+          
+          setCurrentTime(Math.max(0, rawTime - offset));
+          setDuration(Math.max(0, rawDuration - offset));
         }
       }, 250);
     }
@@ -125,7 +135,10 @@ export const MusicProvider = ({ children }) => {
         }
       }
       setCurrentSong(song);
-      playerRef.current.loadVideoById(song.youtubeId);
+      playerRef.current.loadVideoById({
+        videoId: song.youtubeId,
+        startSeconds: song.startSeconds || 0
+      });
       playerRef.current.playVideo();
       setIsPlaying(true);
     },
@@ -170,7 +183,10 @@ export const MusicProvider = ({ children }) => {
     const nextSong = queue[nextIndex];
     setQueueIndex(nextIndex);
     setCurrentSong(nextSong);
-    playerRef.current.loadVideoById(nextSong.youtubeId);
+    playerRef.current.loadVideoById({
+      videoId: nextSong.youtubeId,
+      startSeconds: nextSong.startSeconds || 0
+    });
     playerRef.current.playVideo();
   }, [queue, queueIndex, isShuffled, repeatMode, isPlayerReady]);
 
@@ -191,13 +207,17 @@ export const MusicProvider = ({ children }) => {
     const prevSong = queue[prevIndex];
     setQueueIndex(prevIndex);
     setCurrentSong(prevSong);
-    playerRef.current.loadVideoById(prevSong.youtubeId);
+    playerRef.current.loadVideoById({
+      videoId: prevSong.youtubeId,
+      startSeconds: prevSong.startSeconds || 0
+    });
     playerRef.current.playVideo();
   }, [queue, queueIndex, isPlayerReady]);
 
   const seekTo = useCallback((time) => {
     if (!isPlayerReady || !playerRef.current) return;
-    playerRef.current.seekTo(time, true);
+    const offset = currentSongRef.current?.startSeconds || 0;
+    playerRef.current.seekTo(time + offset, true);
     setCurrentTime(time);
   }, [isPlayerReady]);
 

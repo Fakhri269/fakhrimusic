@@ -8,6 +8,7 @@ export const songs = [
     duration: 198,
     cover: "https://upload.wikimedia.org/wikipedia/en/0/08/Justin_Bieber_-_Justice.png",
     youtubeId: "tQ0yjYUFKAE",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 1500000000,
     liked: true
   },
@@ -20,6 +21,7 @@ export const songs = [
     duration: 141,
     cover: "https://upload.wikimedia.org/wikipedia/en/0/0c/The_Kid_Laroi_and_Justin_Bieber_-_Stay.png",
     youtubeId: "kTJczUoc26U",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2800000000,
     liked: false
   },
@@ -32,6 +34,7 @@ export const songs = [
     duration: 152,
     cover: "https://upload.wikimedia.org/wikipedia/en/0/08/Justin_Bieber_-_Justice.png",
     youtubeId: "Fp8msa5uYsc",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 900000000,
     liked: false
   },
@@ -44,6 +47,7 @@ export const songs = [
     duration: 233,
     cover: "https://upload.wikimedia.org/wikipedia/en/2/27/Justin_Bieber_-_Purpose_%28Official_Album_Cover%29.png",
     youtubeId: "oyEuk8j8imI",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2100000000,
     liked: true
   },
@@ -56,6 +60,7 @@ export const songs = [
     duration: 272,
     cover: "https://upload.wikimedia.org/wikipedia/en/f/f6/Taylor_Swift_-_1989.png",
     youtubeId: "e-ORhEE9VVg",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3500000000,
     liked: false
   },
@@ -68,6 +73,7 @@ export const songs = [
     duration: 178,
     cover: "https://upload.wikimedia.org/wikipedia/en/c/cd/Taylor_Swift_-_Lover.png",
     youtubeId: "GrKQvyXpNgc",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 1200000000,
     liked: true
   },
@@ -80,6 +86,7 @@ export const songs = [
     duration: 220,
     cover: "https://upload.wikimedia.org/wikipedia/en/e/eb/Bruno_Mars_-_Doo-Wops_%26_Hooligans.png",
     youtubeId: "LjhCEhWiKXk",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2800000000,
     liked: false
   },
@@ -92,6 +99,7 @@ export const songs = [
     duration: 233,
     cover: "https://upload.wikimedia.org/wikipedia/en/0/07/Unorthodox_Jukebox.png",
     youtubeId: "e-fA-gBCkj0",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 1500000000,
     liked: false
   },
@@ -104,6 +112,7 @@ export const songs = [
     duration: 200,
     cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png",
     youtubeId: "4NRXx6U8ABQ",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3800000000,
     liked: true
   },
@@ -116,6 +125,7 @@ export const songs = [
     duration: 230,
     cover: "https://upload.wikimedia.org/wikipedia/en/3/39/The_Weeknd_-_Starboy.png",
     youtubeId: "34Na4j8AVgA",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2500000000,
     liked: false
   },
@@ -128,6 +138,7 @@ export const songs = [
     duration: 302,
     cover: "https://i.scdn.co/image/ab67616d0000b273413cb17277c7f3e8b0105dfd",
     youtubeId: "gIsoLyQX7W8",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 120000000,
     liked: false
   },
@@ -140,6 +151,7 @@ export const songs = [
     duration: 242,
     cover: "https://upload.wikimedia.org/wikipedia/id/f/fb/Tulus_Manusia.jpeg",
     youtubeId: "9II3OGZETo4",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 350000000,
     liked: true
   },
@@ -152,6 +164,7 @@ export const songs = [
     duration: 243,
     cover: "https://upload.wikimedia.org/wikipedia/id/3/36/Sial_-_Mahalini.jpg",
     youtubeId: "QSWYyoF79oE",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 280000000,
     liked: false
   },
@@ -164,6 +177,7 @@ export const songs = [
     duration: 194,
     cover: "https://upload.wikimedia.org/wikipedia/en/3/38/Billie_Eilish_-_Bad_Guy.png",
     youtubeId: "DyDfgMOUjCI",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 2200000000,
     liked: false
   },
@@ -176,6 +190,7 @@ export const songs = [
     duration: 233,
     cover: "https://upload.wikimedia.org/wikipedia/en/4/45/Divide_cover.png",
     youtubeId: "JGwWNGJdvx8",
+    startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3600000000,
     liked: true
   }
