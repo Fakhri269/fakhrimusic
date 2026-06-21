@@ -1,27 +1,13 @@
 import React from 'react';
-import { X, Mic2 } from 'lucide-react';
+import { X, Maximize2 } from 'lucide-react';
+import { lyrics } from '../data/lyrics';
 
-const dummyLyrics = [
-  "Sedang memuat lirik untuk lagu ini...",
-  "Lirik disinkronisasikan",
-  "♪ (Musik) ♪",
-  "Oh yeah...",
-  "This is a dummy lyrics section",
-  "Because we don't have a real lyrics API",
-  "But it looks exactly like Spotify's right?",
-  "You can scroll through these lines",
-  "And imagine you are singing along",
-  "To your favorite song",
-  "♪ (Chorus) ♪",
-  "La la la la la",
-  "Singing in the rain",
-  "This is the best app ever",
-  "FakhriMusic is awesome",
-  "♪ (Outro) ♪",
-];
-
-const NowPlayingSidebar = ({ currentSong, onClose }) => {
+const NowPlayingSidebar = ({ currentSong, onClose, onExpandLyrics }) => {
   if (!currentSong) return null;
+
+  const songLyrics = lyrics[currentSong.id] 
+    ? lyrics[currentSong.id].split('\n') 
+    : ["Lirik tidak tersedia."];
 
   return (
     <aside className="right-sidebar">
@@ -50,17 +36,31 @@ const NowPlayingSidebar = ({ currentSong, onClose }) => {
         </p>
       </div>
 
-      <div className="lyrics-card">
-        <div className="lyrics-card-header">Lyrics</div>
+      <div 
+        className="lyrics-card" 
+        onClick={onExpandLyrics} 
+        style={{ cursor: 'pointer', transition: 'transform 0.2s' }}
+        onMouseEnter={(e) => e.currentTarget.style.transform = 'scale(1.02)'}
+        onMouseLeave={(e) => e.currentTarget.style.transform = 'scale(1)'}
+      >
+        <div className="lyrics-card-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+          <span>Lyrics</span>
+          <Maximize2 size={16} />
+        </div>
         <div className="lyrics-content">
-          {dummyLyrics.map((line, index) => (
+          {songLyrics.slice(0, 8).map((line, index) => (
             <div 
               key={index} 
-              className={`lyrics-line ${index === 3 || index === 4 ? 'active' : ''}`}
+              className={`lyrics-line ${index === 0 ? 'active' : ''}`}
             >
               {line}
             </div>
           ))}
+          {songLyrics.length > 8 && (
+            <div className="lyrics-line" style={{ marginTop: 8, opacity: 0.5, fontSize: '0.9rem' }}>
+              Click to view full lyrics...
+            </div>
+          )}
         </div>
       </div>
     </aside>

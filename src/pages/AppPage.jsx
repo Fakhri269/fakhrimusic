@@ -8,6 +8,7 @@ import {
 import { useAuth } from '../context/AuthContext';
 import { useMusic } from '../context/MusicContext';
 import NowPlayingSidebar from '../components/NowPlayingSidebar';
+import FullPageLyrics from '../components/FullPageLyrics';
 
 const formatTime = (s) => {
   if (!s || isNaN(s)) return '0:00';
@@ -36,6 +37,7 @@ const AppPage = () => {
   const [activeNav, setActiveNav] = useState('home');
   const [search, setSearch] = useState('');
   const [isRightSidebarOpen, setIsRightSidebarOpen] = useState(false);
+  const [isLyricsExpanded, setIsLyricsExpanded] = useState(false);
 
   const handleLogout = async () => {
     await logout();
@@ -285,8 +287,20 @@ const AppPage = () => {
       </main>
 
       {/* ── RIGHT SIDEBAR ── */}
-      {isRightSidebarOpen && currentSong && (
-        <NowPlayingSidebar currentSong={currentSong} onClose={() => setIsRightSidebarOpen(false)} />
+      {isRightSidebarOpen && currentSong && !isLyricsExpanded && (
+        <NowPlayingSidebar 
+          currentSong={currentSong} 
+          onClose={() => setIsRightSidebarOpen(false)} 
+          onExpandLyrics={() => setIsLyricsExpanded(true)}
+        />
+      )}
+
+      {/* ── FULL PAGE LYRICS ── */}
+      {isLyricsExpanded && currentSong && (
+        <FullPageLyrics 
+          currentSong={currentSong} 
+          onClose={() => setIsLyricsExpanded(false)} 
+        />
       )}
 
       {/* ── PLAYER BAR ── */}
