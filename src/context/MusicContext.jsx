@@ -128,16 +128,36 @@ export const MusicProvider = ({ children }) => {
     
     let finalYoutubeId = songToPlay.youtubeId;
     if (!finalYoutubeId) {
-      try {
-        const res = await fetch(`/api/yt-search?q=${encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio')}`);
-        const data = await res.json();
-        if (data && data.length > 0) {
-          finalYoutubeId = data[0].videoId;
-          songToPlay.youtubeId = finalYoutubeId;
+      // 1. Fallback: Check if the song exists in our local songs.js
+      const localMatch = initialSongs.find(
+        (s) =>
+          s.title.toLowerCase().includes(songToPlay.title.toLowerCase()) ||
+          songToPlay.title.toLowerCase().includes(s.title.toLowerCase())
+      );
+      if (localMatch && localMatch.youtubeId) {
+        finalYoutubeId = localMatch.youtubeId;
+        songToPlay.youtubeId = finalYoutubeId;
+      } else {
+        // 2. Try the dev backend (will fail gracefully in production)
+        try {
+          const res = await fetch(`/api/yt-search?q=${encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio')}`);
+          if (res.ok) {
+            const data = await res.json();
+            if (data && data.length > 0) {
+              finalYoutubeId = data[0].videoId;
+              songToPlay.youtubeId = finalYoutubeId;
+            }
+          }
+        } catch (err) {
+          console.warn("Backend yt-search is not available in static mode.");
         }
-      } catch (err) {
-        console.error("Failed to fetch youtubeId", err);
       }
+    }
+
+    if (!finalYoutubeId) {
+      alert(`Maaf, lagu "${songToPlay.title}" tidak dapat diputar pada versi demo statis ini karena backend pencarian YouTube dinonaktifkan.`);
+      setIsPlaying(false);
+      return;
     }
 
     if (finalYoutubeId && playerRef.current) {
