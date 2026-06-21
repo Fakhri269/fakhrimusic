@@ -19,33 +19,95 @@ export const MusicProvider = ({ children }) => {
     initialSongs.filter((s) => s.liked).map((s) => s.id)
   );
 
-  const audioRef = useRef(new Audio());
+  const playerRef = useRef(null);
+  const [isPlayerReady, setIsPlayerReady] = useState(false);
 
+  // Initialize YouTube IFrame API
   useEffect(() => {
-    const audio = audioRef.current;
+    // Create hidden div for player
+    const div = document.createElement("div");
+    div.id = "youtube-player-container";
+    div.style.display = "none";
+    document.body.appendChild(div);
 
-    const handleTimeUpdate = () => setCurrentTime(audio.currentTime);
-    const handleDurationChange = () => setDuration(audio.duration);
-    const handleEnded = () => handleNext();
+    // Load script
+    const tag = document.createElement("script");
+    tag.src = "https://www.youtube.com/iframe_api";
+    const firstScriptTag = document.getElementsByTagName("script")[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
-    audio.addEventListener("timeupdate", handleTimeUpdate);
-    audio.addEventListener("durationchange", handleDurationChange);
-    audio.addEventListener("ended", handleEnded);
+    window.onYouTubeIframeAPIReady = () => {
+      playerRef.current = new window.YT.Player("youtube-player-container", {
+        height: "0",
+        width: "0",
+        videoId: "",
+        playerVars: {
+          autoplay: 0,
+          controls: 0,
+          disablekb: 1,
+          fs: 0,
+          rel: 0,
+          modestbranding: 1
+        },
+        events: {
+          onReady: () => {
+            setIsPlayerReady(true);
+            playerRef.current.setVolume(volume * 100);
+          },
+          onStateChange: (event) => {
+            if (event.data === window.YT.PlayerState.ENDED) {
+              handleNextRef.current();
+            } else if (event.data === window.YT.PlayerState.PLAYING) {
+              setIsPlaying(true);
+            } else if (event.data === window.YT.PlayerState.PAUSED) {
+              setIsPlaying(false);
+            }
+          }
+        }
+      });
+    };
 
     return () => {
-      audio.removeEventListener("timeupdate", handleTimeUpdate);
-      audio.removeEventListener("durationchange", handleDurationChange);
-      audio.removeEventListener("ended", handleEnded);
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+      const container = document.getElementById("youtube-player-container");
+      if (container) document.body.removeChild(container);
     };
-  }, [queue, queueIndex, isShuffled, repeatMode]);
+  }, []);
+
+  // Use a ref for handleNext to access latest state inside onStateChange
+  const handleNextRef = useRef(null);
+
+  // Polling for currentTime and duration
+  useEffect(() => {
+    let interval;
+    if (isPlaying && isPlayerReady) {
+      interval = setInterval(() => {
+        if (playerRef.current && playerRef.current.getCurrentTime) {
+          setCurrentTime(playerRef.current.getCurrentTime());
+          setDuration(playerRef.current.getDuration());
+        }
+      }, 500);
+    }
+    return () => clearInterval(interval);
+  }, [isPlaying, isPlayerReady]);
 
   useEffect(() => {
-    audioRef.current.volume = isMuted ? 0 : volume;
-  }, [volume, isMuted]);
+    if (isPlayerReady && playerRef.current) {
+      if (isMuted) {
+        playerRef.current.mute();
+      } else {
+        playerRef.current.unMute();
+        playerRef.current.setVolume(volume * 100);
+      }
+    }
+  }, [volume, isMuted, isPlayerReady]);
 
   const playSong = useCallback(
     (song, playlist = null) => {
-      const audio = audioRef.current;
+      if (!isPlayerReady) return;
+      
       if (playlist) {
         setQueue(playlist);
         const idx = playlist.findIndex((s) => s.id === song.id);
@@ -57,27 +119,31 @@ export const MusicProvider = ({ children }) => {
         }
       }
       setCurrentSong(song);
-      audio.src = song.audio;
-      audio.play().catch(() => {});
+      playerRef.current.loadVideoById(song.youtubeId);
+      playerRef.current.playVideo();
       setIsPlaying(true);
     },
-    [queue]
+    [queue, isPlayerReady]
   );
 
   const togglePlay = useCallback(() => {
-    const audio = audioRef.current;
+    if (!isPlayerReady || !playerRef.current) return;
+    
     if (isPlaying) {
-      audio.pause();
+      playerRef.current.pauseVideo();
     } else {
-      audio.play().catch(() => {});
+      playerRef.current.playVideo();
     }
+    // Note: setIsPlaying will also be updated by onStateChange
     setIsPlaying(!isPlaying);
-  }, [isPlaying]);
+  }, [isPlaying, isPlayerReady]);
 
   const handleNext = useCallback(() => {
+    if (!isPlayerReady || !playerRef.current) return;
+
     if (repeatMode === "one") {
-      audioRef.current.currentTime = 0;
-      audioRef.current.play().catch(() => {});
+      playerRef.current.seekTo(0);
+      playerRef.current.playVideo();
       return;
     }
     if (queue.length === 0) return;
@@ -90,6 +156,7 @@ export const MusicProvider = ({ children }) => {
     }
 
     if (nextIndex === 0 && repeatMode === "none" && !isShuffled) {
+      playerRef.current.stopVideo();
       setIsPlaying(false);
       return;
     }
@@ -97,13 +164,20 @@ export const MusicProvider = ({ children }) => {
     const nextSong = queue[nextIndex];
     setQueueIndex(nextIndex);
     setCurrentSong(nextSong);
-    audioRef.current.src = nextSong.audio;
-    audioRef.current.play().catch(() => {});
-  }, [queue, queueIndex, isShuffled, repeatMode]);
+    playerRef.current.loadVideoById(nextSong.youtubeId);
+    playerRef.current.playVideo();
+  }, [queue, queueIndex, isShuffled, repeatMode, isPlayerReady]);
+
+  // Update ref so YT events use the latest function
+  useEffect(() => {
+    handleNextRef.current = handleNext;
+  }, [handleNext]);
 
   const handlePrev = useCallback(() => {
-    if (audioRef.current.currentTime > 3) {
-      audioRef.current.currentTime = 0;
+    if (!isPlayerReady || !playerRef.current) return;
+
+    if (playerRef.current.getCurrentTime() > 3) {
+      playerRef.current.seekTo(0);
       return;
     }
     if (queue.length === 0) return;
@@ -111,14 +185,15 @@ export const MusicProvider = ({ children }) => {
     const prevSong = queue[prevIndex];
     setQueueIndex(prevIndex);
     setCurrentSong(prevSong);
-    audioRef.current.src = prevSong.audio;
-    audioRef.current.play().catch(() => {});
-  }, [queue, queueIndex]);
+    playerRef.current.loadVideoById(prevSong.youtubeId);
+    playerRef.current.playVideo();
+  }, [queue, queueIndex, isPlayerReady]);
 
   const seekTo = useCallback((time) => {
-    audioRef.current.currentTime = time;
+    if (!isPlayerReady || !playerRef.current) return;
+    playerRef.current.seekTo(time, true);
     setCurrentTime(time);
-  }, []);
+  }, [isPlayerReady]);
 
   const toggleLike = useCallback((songId) => {
     setLikedSongs((prev) =>
@@ -158,6 +233,7 @@ export const MusicProvider = ({ children }) => {
         toggleRepeat,
         toggleLike,
         isLiked,
+        isPlayerReady
       }}
     >
       {children}
