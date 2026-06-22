@@ -32,19 +32,45 @@ export default defineConfig({
     ytSearchPlugin(),
     VitePWA({
       registerType: 'autoUpdate',
+      includeAssets: ['favicon.svg', 'icon-192.png', 'icon-512.png'],
       manifest: {
         name: 'FakhriMusic',
         short_name: 'FakhriMusic',
-        description: 'Premium music player',
+        description: 'Premium music streaming — listen to millions of songs',
         theme_color: '#000000',
         background_color: '#000000',
         display: 'standalone',
+        orientation: 'portrait',
+        start_url: '/',
+        scope: '/',
+        categories: ['music', 'entertainment'],
         icons: [
           {
-            src: 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png',
+            src: '/icon-192.png',
+            sizes: '192x192',
+            type: 'image/png',
+            purpose: 'any'
+          },
+          {
+            src: '/icon-512.png',
             sizes: '512x512',
             type: 'image/png',
-            purpose: 'any maskable'
+            purpose: 'any'
+          },
+          {
+            src: '/icon-512.png',
+            sizes: '512x512',
+            type: 'image/png',
+            purpose: 'maskable'
+          }
+        ]
+      },
+      workbox: {
+        globPatterns: ['**/*.{js,css,html,ico,png,svg,webp}'],
+        runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/.*\.youtube\.com\/.*/i,
+            handler: 'NetworkOnly'
           }
         ]
       }

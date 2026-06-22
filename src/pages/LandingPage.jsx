@@ -3,9 +3,9 @@ import { Link } from 'react-router-dom';
 import {
   Music2, Play, SkipBack, SkipForward, Shuffle, Repeat,
   Heart, Volume2, Headphones, ListMusic, Zap, Globe,
-  CheckCircle2, ChevronRight, Apple, Smartphone
+  CheckCircle2, ChevronRight, Apple, Smartphone, Download
 } from 'lucide-react';
-
+import { usePWAInstall } from '../hooks/usePWAInstall';
 import { songs } from '../data/songs';
 
 const albumUrls = songs.slice(0, 16).map(s => s.cover);
@@ -26,8 +26,15 @@ const marqueeItems = [
 ];
 
 const LandingPage = () => {
-  const handleInstall = () => {
-    alert("FakhriMusic adalah Web App PWA! Di Chrome/Safari HP kamu, pilih menu 'Tambahkan ke Layar Utama' (Add to Home Screen) untuk menginstalnya sebagai aplikasi.");
+  const { canInstall, installed, install } = usePWAInstall();
+
+  const handleInstallClick = async () => {
+    if (canInstall) {
+      await install();
+    } else {
+      // Fallback for iOS Safari which doesn't support beforeinstallprompt
+      alert("Di iPhone/Safari: buka menu Share (📤) lalu pilih 'Add to Home Screen'. Di Android: buka menu Chrome (⋮) lalu pilih 'Install app'.");
+    }
   };
 
   return (
@@ -84,14 +91,29 @@ const LandingPage = () => {
               </a>
             </div>
             
-            <div className="hero-downloads anim-fade-up delay-300" style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
-              <button className="btn-ghost" onClick={handleInstall} style={{ fontSize: '0.9rem', padding: '12px 24px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Apple size={20} fill="currentColor" />
-                Download for iOS
+            <div className="hero-downloads anim-fade-up delay-300" style={{ display: 'flex', gap: '12px', marginTop: '24px', flexWrap: 'wrap' }}>
+              {/* Main Install Button — triggers native browser prompt on Android */}
+              {!installed ? (
+                <button
+                  className={canInstall ? 'btn-green' : 'btn-ghost'}
+                  onClick={handleInstallClick}
+                  style={{ fontSize: '0.9rem', padding: '12px 28px', display: 'flex', gap: '8px', alignItems: 'center' }}
+                >
+                  <Download size={18} />
+                  {canInstall ? 'Install Aplikasi' : 'Add to Home Screen'}
+                </button>
+              ) : (
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8, color: '#1ed760', fontWeight: 600, fontSize: '0.9rem' }}>
+                  <CheckCircle2 size={18} /> Sudah terinstall!
+                </div>
+              )}
+              <button className="btn-ghost" onClick={handleInstallClick} style={{ fontSize: '0.9rem', padding: '12px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Apple size={18} fill="currentColor" />
+                iOS
               </button>
-              <button className="btn-ghost" onClick={handleInstall} style={{ fontSize: '0.9rem', padding: '12px 24px', display: 'flex', gap: '8px', alignItems: 'center' }}>
-                <Smartphone size={20} />
-                Download for Android
+              <button className="btn-ghost" onClick={handleInstallClick} style={{ fontSize: '0.9rem', padding: '12px 20px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Smartphone size={18} />
+                Android
               </button>
             </div>
 

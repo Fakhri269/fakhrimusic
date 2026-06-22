@@ -378,17 +378,16 @@ export const MusicProvider = ({ children }) => {
 
     let nextIndex;
     if (isShuffled) {
-      nextIndex = Math.floor(Math.random() * queue.length);
+      // Avoid replaying the same song
+      do {
+        nextIndex = Math.floor(Math.random() * queue.length);
+      } while (queue.length > 1 && nextIndex === queueIndex);
     } else {
       nextIndex = (queueIndex + 1) % queue.length;
     }
 
-    if (nextIndex === 0 && repeatMode === "none" && !isShuffled) {
-      playerRef.current.stopVideo();
-      setIsPlaying(false);
-      return;
-    }
-
+    // Always continue playing — even when reaching the end of the queue
+    // (repeatMode=all loops, repeatMode=none also loops back so music never stops)
     const nextSong = queue[nextIndex];
     setQueueIndex(nextIndex);
     loadAndPlayYoutubeVideo(nextSong);
