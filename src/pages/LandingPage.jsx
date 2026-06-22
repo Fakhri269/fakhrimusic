@@ -3,27 +3,35 @@ import { Link } from 'react-router-dom';
 import {
   Music2, Play, SkipBack, SkipForward, Shuffle, Repeat,
   Heart, Volume2, Headphones, ListMusic, Zap, Globe,
-  CheckCircle2, ChevronRight
+  CheckCircle2, ChevronRight, Apple, Smartphone
 } from 'lucide-react';
 
-// Seeded album covers using picsum
-const albumSeeds = ['music1', 'music2', 'music3', 'music4', 'music5', 'music6', 'music7', 'music8', 'music9', 'music10', 'music11', 'music12', 'music13', 'music14', 'music15', 'music16'];
-const albumUrls = albumSeeds.map((s, i) => `https://picsum.photos/seed/${s}/300/300`);
+import { songs } from '../data/songs';
+
+const albumUrls = songs.slice(0, 16).map(s => s.cover);
+// if less than 16, repeat
+while (albumUrls.length < 16) {
+  albumUrls.push(...albumUrls.slice(0, 16 - albumUrls.length));
+}
 
 const marqueeItems = [
-  { title: 'Blinding Lights', artist: 'The Weeknd', img: 'https://picsum.photos/seed/bm1/80/80' },
-  { title: 'As It Was', artist: 'Harry Styles', img: 'https://picsum.photos/seed/bm2/80/80' },
-  { title: 'Levitating', artist: 'Dua Lipa', img: 'https://picsum.photos/seed/bm3/80/80' },
-  { title: 'Stay', artist: 'Kid LAROI', img: 'https://picsum.photos/seed/bm4/80/80' },
-  { title: 'Peaches', artist: 'Justin Bieber', img: 'https://picsum.photos/seed/bm5/80/80' },
-  { title: 'Butter', artist: 'BTS', img: 'https://picsum.photos/seed/bm6/80/80' },
-  { title: 'Good 4 U', artist: 'Olivia Rodrigo', img: 'https://picsum.photos/seed/bm7/80/80' },
-  { title: 'Montero', artist: 'Lil Nas X', img: 'https://picsum.photos/seed/bm8/80/80' },
+  { title: 'Blinding Lights', artist: 'The Weeknd', img: songs[0]?.cover || 'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=200&h=200&fit=crop' },
+  { title: 'As It Was', artist: 'Harry Styles', img: songs[1]?.cover || 'https://images.unsplash.com/photo-1511671782779-c97d3d27a1d4?w=200&h=200&fit=crop' },
+  { title: 'Levitating', artist: 'Dua Lipa', img: songs[2]?.cover || 'https://images.unsplash.com/photo-1493225457124-a1a2a5956093?w=200&h=200&fit=crop' },
+  { title: 'Stay', artist: 'Kid LAROI', img: songs[3]?.cover || 'https://images.unsplash.com/photo-1459749411175-04bf5292ceea?w=200&h=200&fit=crop' },
+  { title: 'Peaches', artist: 'Justin Bieber', img: songs[4]?.cover || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=200&h=200&fit=crop' },
+  { title: 'Butter', artist: 'BTS', img: songs[5]?.cover || 'https://images.unsplash.com/photo-1506157786151-b849c5307c65?w=200&h=200&fit=crop' },
+  { title: 'Good 4 U', artist: 'Olivia Rodrigo', img: songs[6]?.cover || 'https://images.unsplash.com/photo-1490227931327-0c7f1a3070cd?w=200&h=200&fit=crop' },
+  { title: 'Montero', artist: 'Lil Nas X', img: songs[7]?.cover || 'https://images.unsplash.com/photo-1470229722913-7c090be5c5b5?w=200&h=200&fit=crop' },
 ];
 
 const LandingPage = () => {
+  const handleInstall = () => {
+    alert("FakhriMusic adalah Web App PWA! Di Chrome/Safari HP kamu, pilih menu 'Tambahkan ke Layar Utama' (Add to Home Screen) untuk menginstalnya sebagai aplikasi.");
+  };
+
   return (
-    <div className="landing">
+    <div className="landing anim-fade-in">
       {/* ── NAV ── */}
       <nav className="landing-nav anim-fade">
         <div className="nav-logo">
@@ -75,6 +83,17 @@ const LandingPage = () => {
                 Explore Premium <ChevronRight size={16} />
               </a>
             </div>
+            
+            <div className="hero-downloads anim-fade-up delay-300" style={{ display: 'flex', gap: '16px', marginTop: '24px' }}>
+              <button className="btn-ghost" onClick={handleInstall} style={{ fontSize: '0.9rem', padding: '12px 24px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Apple size={20} fill="currentColor" />
+                Download for iOS
+              </button>
+              <button className="btn-ghost" onClick={handleInstall} style={{ fontSize: '0.9rem', padding: '12px 24px', display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <Smartphone size={20} />
+                Download for Android
+              </button>
+            </div>
 
             <div className="hero-stats anim-fade-up delay-400">
               <div className="stat-item">
@@ -102,7 +121,7 @@ const LandingPage = () => {
               <div className="friend-list">
                 {[11,12,13,14].map(s => (
                   <div className="friend-avatar" key={s}>
-                    <img src={`https://picsum.photos/seed/face${s}/60/60`} alt="" />
+                    <img src={`https://api.dicebear.com/7.x/avataaars/svg?seed=user${s}&backgroundColor=1ed760`} alt="" />
                   </div>
                 ))}
                 <div className="friend-avatar" style={{ background: 'var(--bg-card-hover)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.65rem', color: 'var(--text-subdued)', fontWeight: 700 }}>
@@ -115,7 +134,7 @@ const LandingPage = () => {
             <div className="player-mockup">
               <div className="player-card">
                 <div className="player-album">
-                  <img src="https://picsum.photos/seed/hero-album/400/400" alt="Album Art" />
+                  <img src={songs[10]?.cover || 'https://images.unsplash.com/photo-1614613535308-eb5fbd3d2c17?w=400&h=400&fit=crop'} alt="Album Art" onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/shapes/svg?seed=album1&backgroundColor=1ed760`; }} />
                   <div className="album-play-overlay">
                     <div className="album-play-btn">
                       <Play size={28} fill="currentColor" />
@@ -125,8 +144,8 @@ const LandingPage = () => {
 
                 <div className="player-meta">
                   <div>
-                    <div className="player-track-name">Midnight Serenade</div>
-                    <div className="player-artist-name">Luna Waves</div>
+                    <div className="player-track-name">{songs[10]?.title || 'Midnight Serenade'}</div>
+                    <div className="player-artist-name">{songs[10]?.artist || 'Luna Waves'}</div>
                   </div>
                   <Heart size={20} className="player-heart" fill="#1ed760" />
                 </div>
@@ -173,7 +192,7 @@ const LandingPage = () => {
               <div className="top-track-item">
                 <div className="top-track-rank">1</div>
                 <div className="top-track-thumb">
-                  <img src="https://picsum.photos/seed/top1/80/80" alt="" />
+                  <img src="https://picsum.photos/seed/top1/80/80" alt="" onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/shapes/svg?seed=top1&backgroundColor=1ed760`; }} />
                 </div>
                 <div>
                   <div className="top-track-name">Blinding Lights</div>
@@ -192,7 +211,7 @@ const LandingPage = () => {
             <React.Fragment key={i}>
               <div className="marquee-item">
                 <div className="marquee-album">
-                  <img src={item.img} alt={item.title} />
+                  <img src={item.img} alt={item.title} onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/shapes/svg?seed=mq${i}&backgroundColor=1ed760`; }} />
                 </div>
                 <div>
                   <div style={{ fontWeight: 600, fontSize: '0.875rem', color: '#fff' }}>{item.title}</div>

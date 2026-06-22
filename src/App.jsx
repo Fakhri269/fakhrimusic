@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router-dom'
 import LandingPage from './pages/LandingPage'
 import LoginPage from './pages/LoginPage'
 import AppPage from './pages/AppPage'
+import OnboardingPage from './pages/OnboardingPage'
 import { ProtectedRoute, PublicRoute } from './components/RouteGuards'
 
 function App() {
@@ -9,6 +10,7 @@ function App() {
     <Routes>
       <Route path="/" element={<PublicRoute><LandingPage /></PublicRoute>} />
       <Route path="/login" element={<PublicRoute><LoginPage /></PublicRoute>} />
+      <Route path="/onboarding" element={<ProtectedRoute><OnboardingPage /></ProtectedRoute>} />
       <Route path="/app" element={<ProtectedRoute><AppPage /></ProtectedRoute>} />
     </Routes>
   )

@@ -1,4 +1,6 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
+import { auth } from "../firebase";
+import { onAuthStateChanged } from "firebase/auth";
 import { songs as initialSongs } from "../data/songs";
 import { findInCache } from "../data/ytCache";
 
@@ -25,6 +27,25 @@ export const MusicProvider = ({ children }) => {
   const [likedSongs, setLikedSongs] = useState(
     initialSongs.filter((s) => s.liked).map((s) => s.id)
   );
+  
+  const [user, setUser] = useState(null);
+  const [playlists, setPlaylists] = useState([]);
+
+  useEffect(() => {
+    const unsub = onAuthStateChanged(auth, (u) => {
+      setUser(u);
+      if (u) {
+        const storedLikes = localStorage.getItem(`fm_liked_${u.uid}`);
+        if (storedLikes) setLikedSongs(JSON.parse(storedLikes));
+        const storedPlaylists = localStorage.getItem(`fm_playlists_${u.uid}`);
+        if (storedPlaylists) setPlaylists(JSON.parse(storedPlaylists));
+      } else {
+        setLikedSongs(initialSongs.filter((s) => s.liked).map((s) => s.id));
+        setPlaylists([]);
+      }
+    });
+    return () => unsub();
+  }, []);
 
   const playerRef = useRef(null);
   const [isPlayerReady, setIsPlayerReady] = useState(false);
@@ -94,20 +115,96 @@ export const MusicProvider = ({ children }) => {
   // Use a ref for handleNext to access latest state inside onStateChange
   const handleNextRef = useRef(null);
 
-  // Polling for currentTime and duration
+  const silentAudioRef = useRef(null);
+  const audioCtxRef = useRef(null);
+  const wakeLockRef = useRef(null);
+
+  // Acquire Wake Lock to prevent device from sleeping and killing audio
+  const acquireWakeLock = async () => {
+    if ('wakeLock' in navigator) {
+      try {
+        wakeLockRef.current = await navigator.wakeLock.request('screen');
+      } catch (e) {
+        // Wake Lock not supported or denied — fallback to silent audio
+      }
+    }
+  };
+
+  const releaseWakeLock = () => {
+    if (wakeLockRef.current) {
+      wakeLockRef.current.release().catch(() => {});
+      wakeLockRef.current = null;
+    }
+  };
+
+  // Re-acquire wake lock when tab becomes visible again (e.g. user unlocks screen)
+  useEffect(() => {
+    const handleVisibility = async () => {
+      if (document.visibilityState === 'visible' && isPlaying) {
+        await acquireWakeLock();
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibility);
+    return () => document.removeEventListener('visibilitychange', handleVisibility);
+  }, [isPlaying]);
+
+  useEffect(() => {
+    // Silent HTML5 Audio (keeps browser audio session alive on iOS/Android)
+    const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+    audio.loop = true;
+    audio.volume = 0.001; // near-inaudible
+    silentAudioRef.current = audio;
+
+    // AudioContext oscillator at 0 gain — keeps audio thread awake on Android Chrome
+    try {
+      const ctx = new (window.AudioContext || window.webkitAudioContext)();
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      gain.gain.value = 0; // completely silent
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+      osc.start();
+      audioCtxRef.current = ctx;
+    } catch (e) {
+      // AudioContext not supported
+    }
+
+    return () => {
+      audio.pause();
+      if (audioCtxRef.current) audioCtxRef.current.close().catch(() => {});
+      releaseWakeLock();
+    };
+  }, []);
+
+  // Polling for currentTime and duration + background keep-alive
   useEffect(() => {
     let interval;
     if (isPlaying && isPlayerReady) {
+      // Start silent audio to keep OS audio session alive (critical for iOS)
+      if (silentAudioRef.current) {
+        silentAudioRef.current.play().catch(() => {});
+      }
+      // Resume AudioContext if suspended (Android Chrome)
+      if (audioCtxRef.current && audioCtxRef.current.state === 'suspended') {
+        audioCtxRef.current.resume().catch(() => {});
+      }
+      // Request Wake Lock
+      acquireWakeLock();
+
       interval = setInterval(() => {
         if (playerRef.current && playerRef.current.getCurrentTime) {
           const offset = currentSongRef.current?.startSeconds || 0;
           const rawTime = playerRef.current.getCurrentTime() || 0;
           const rawDuration = playerRef.current.getDuration() || 0;
-          
           setCurrentTime(Math.max(0, rawTime - offset));
           setDuration(Math.max(0, rawDuration - offset));
         }
       }, 250);
+    } else {
+      if (silentAudioRef.current) {
+        silentAudioRef.current.pause();
+      }
+      releaseWakeLock();
     }
     return () => clearInterval(interval);
   }, [isPlaying, isPlayerReady]);
@@ -324,10 +421,55 @@ export const MusicProvider = ({ children }) => {
   }, [isPlayerReady]);
 
   const toggleLike = useCallback((songId) => {
-    setLikedSongs((prev) =>
-      prev.includes(songId) ? prev.filter((id) => id !== songId) : [...prev, songId]
-    );
-  }, []);
+    setLikedSongs((prev) => {
+      const next = prev.includes(songId) ? prev.filter((id) => id !== songId) : [...prev, songId];
+      if (user) localStorage.setItem(`fm_liked_${user.uid}`, JSON.stringify(next));
+      return next;
+    });
+  }, [user]);
+
+  const createPlaylist = useCallback((name) => {
+    if (!name.trim()) return;
+    setPlaylists((prev) => {
+      const next = [...prev, { id: Date.now().toString(), name, songs: [] }];
+      if (user) localStorage.setItem(`fm_playlists_${user.uid}`, JSON.stringify(next));
+      return next;
+    });
+  }, [user]);
+
+  const addSongToPlaylist = useCallback((playlistId, songId) => {
+    setPlaylists((prev) => {
+      const next = prev.map(p => {
+        if (p.id === playlistId && !p.songs.includes(songId)) {
+          return { ...p, songs: [...p.songs, songId] };
+        }
+        return p;
+      });
+      if (user) localStorage.setItem(`fm_playlists_${user.uid}`, JSON.stringify(next));
+      return next;
+    });
+  }, [user]);
+
+  const removeSongFromPlaylist = useCallback((playlistId, songId) => {
+    setPlaylists((prev) => {
+      const next = prev.map(p => {
+        if (p.id === playlistId) {
+          return { ...p, songs: p.songs.filter(id => id !== songId) };
+        }
+        return p;
+      });
+      if (user) localStorage.setItem(`fm_playlists_${user.uid}`, JSON.stringify(next));
+      return next;
+    });
+  }, [user]);
+
+  const deletePlaylist = useCallback((playlistId) => {
+    setPlaylists((prev) => {
+      const next = prev.filter(p => p.id !== playlistId);
+      if (user) localStorage.setItem(`fm_playlists_${user.uid}`, JSON.stringify(next));
+      return next;
+    });
+  }, [user]);
 
   const toggleShuffle = () => setIsShuffled(!isShuffled);
   const toggleRepeat = () => {
@@ -396,6 +538,7 @@ export const MusicProvider = ({ children }) => {
         repeatMode,
         queue,
         likedSongs,
+        playlists,
         playSong,
         togglePlay,
         handleNext,
@@ -406,6 +549,10 @@ export const MusicProvider = ({ children }) => {
         toggleShuffle,
         toggleRepeat,
         toggleLike,
+        createPlaylist,
+        addSongToPlaylist,
+        removeSongFromPlaylist,
+        deletePlaylist,
         isLiked,
         isPlayerReady
       }}

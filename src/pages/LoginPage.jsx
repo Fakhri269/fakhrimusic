@@ -9,12 +9,13 @@ import {
 } from 'firebase/auth';
 import { auth, googleProvider } from '../firebase';
 
-const albumSeeds = [
-  'la1','la2','la3','la4',
-  'la5','la6','la7','la8',
-  'la9','la10','la11','la12',
-  'la13','la14','la15','la16',
-];
+import { songs } from '../data/songs';
+
+const albumCovers = songs.slice(0, 16).map(s => s.cover);
+// Jika kurang dari 16, ulangi array
+while (albumCovers.length < 16) {
+  albumCovers.push(...albumCovers.slice(0, 16 - albumCovers.length));
+}
 
 const GoogleIcon = () => (
   <svg viewBox="0 0 24 24" width="20" height="20" xmlns="http://www.w3.org/2000/svg">
@@ -142,9 +143,14 @@ const LoginPage = () => {
         </div>
         <div className="login-left-content">
           <div className="login-album-grid">
-            {albumSeeds.map((s, i) => (
+            {albumCovers.map((coverUrl, i) => (
               <div className="login-album-cell" key={i}>
-                <img src={`https://picsum.photos/seed/${s}/200/200`} alt="" loading="lazy" />
+                <img 
+                  src={coverUrl} 
+                  alt="" 
+                  loading="lazy" 
+                  onError={(e) => { e.target.onerror = null; e.target.src = `https://api.dicebear.com/7.x/shapes/svg?seed=${i}&backgroundColor=1ed760`; }}
+                />
               </div>
             ))}
           </div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { X, Maximize2 } from 'lucide-react';
 import { useMusic } from '../context/MusicContext';
+import { getInitialsCover } from '../utils/coverFallback';
 
 function parseLRC(lrcText) {
   if (!lrcText) return [];
@@ -69,7 +70,7 @@ const NowPlayingSidebar = ({ currentSong, onClose, onExpandLyrics }) => {
         <button onClick={onClose}><X size={18} /></button>
       </div>
 
-      <img src={currentSong.cover} alt={currentSong.title} className="sp-nps-cover" />
+      <img src={currentSong.cover} alt={currentSong.title} className="sp-nps-cover" onError={(e) => { e.target.onerror = null; e.target.src = getInitialsCover(currentSong.title); }} />
 
       <div className="sp-nps-track">
         <div className="sp-nps-title">{currentSong.title}</div>

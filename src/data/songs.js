@@ -82,7 +82,7 @@ export const songs = [
     title: "Just The Way You Are",
     artist: "Bruno Mars",
     album: "Doo-Wops & Hooligans",
-    genre: "Pop",
+    genre: "R&B",
     duration: 220,
     cover: "https://upload.wikimedia.org/wikipedia/en/e/eb/Bruno_Mars_-_Doo-Wops_%26_Hooligans.png",
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
@@ -95,7 +95,7 @@ export const songs = [
     title: "Locked Out Of Heaven",
     artist: "Bruno Mars",
     album: "Unorthodox Jukebox",
-    genre: "Pop",
+    genre: "R&B",
     duration: 233,
     cover: "https://upload.wikimedia.org/wikipedia/en/0/07/Unorthodox_Jukebox.png",
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
@@ -108,7 +108,7 @@ export const songs = [
     title: "Blinding Lights",
     artist: "The Weeknd",
     album: "After Hours",
-    genre: "Synth-pop",
+    genre: "R&B",
     duration: 200,
     cover: "https://upload.wikimedia.org/wikipedia/en/e/e6/The_Weeknd_-_Blinding_Lights.png",
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
@@ -186,12 +186,64 @@ export const songs = [
     title: "Shape of You",
     artist: "Ed Sheeran",
     album: "÷ (Divide)",
-    genre: "Pop",
+    genre: "Acoustic",
     duration: 233,
     cover: "https://upload.wikimedia.org/wikipedia/en/4/45/Divide_cover.png",
     startSeconds: 0, /* Ubah angka 0 ini sesuai detik awal lagu mulai (misal: 15) untuk mensinkronkan lirik dan melewati intro */
     plays: 3600000000,
     liked: true,
     youtubeId: "_dK2tDK9grQ"
+  },
+  {
+    id: 16,
+    title: "Butter",
+    artist: "BTS",
+    album: "Butter",
+    genre: "K-Pop",
+    duration: 164,
+    cover: "https://upload.wikimedia.org/wikipedia/en/d/db/BTS_-_Butter.png",
+    startSeconds: 0,
+    plays: 1200000000,
+    liked: false,
+    youtubeId: "WMweEpGlu_U"
+  },
+  {
+    id: 17,
+    title: "Bohemian Rhapsody",
+    artist: "Queen",
+    album: "A Night at the Opera",
+    genre: "Rock",
+    duration: 354,
+    cover: "https://upload.wikimedia.org/wikipedia/en/9/9f/Bohemian_Rhapsody.png",
+    startSeconds: 0,
+    plays: 2500000000,
+    liked: true,
+    youtubeId: "fJ9rUzIMcZQ"
+  },
+  {
+    id: 18,
+    title: "From The Start",
+    artist: "Laufey",
+    album: "Bewitched",
+    genre: "Jazz",
+    duration: 169,
+    cover: "https://upload.wikimedia.org/wikipedia/en/5/5b/Laufey_-_From_the_Start.png",
+    startSeconds: 0,
+    plays: 500000000,
+    liked: false,
+    youtubeId: "1-Wk1fGg2oA"
+  },
+  {
+    id: 19,
+    title: "Lose Yourself",
+    artist: "Eminem",
+    album: "8 Mile",
+    genre: "Hip Hop",
+    duration: 326,
+    cover: "https://upload.wikimedia.org/wikipedia/en/4/41/Lose_Yourself.jpg",
+    startSeconds: 0,
+    plays: 2100000000,
+    liked: true,
+    youtubeId: "_Yhyp-_hX2s"
   }
 ];
