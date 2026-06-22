@@ -150,7 +150,7 @@ export const MusicProvider = ({ children }) => {
           songToPlay.youtubeId = finalYoutubeId;
         }
       }
-      // 3. Network search as last resort (YouTube API / allorigins)
+      // 3. Network search as last resort (YouTube API / Invidious / allorigins)
       if (!finalYoutubeId) {
         try {
           const query = encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio');
@@ -163,7 +163,7 @@ export const MusicProvider = ({ children }) => {
 
           let found = false;
 
-          // Try YouTube Data API v3 if key is configured
+          // 3a. Try YouTube Data API v3 if key is configured
           const YT_API_KEY = import.meta.env.VITE_YOUTUBE_API_KEY;
           if (YT_API_KEY) {
             try {
@@ -183,7 +183,30 @@ export const MusicProvider = ({ children }) => {
             } catch (_) { /* fall through */ }
           }
 
-          // Fallback: allorigins scrape
+          // 3b. Fallback: Invidious API Instances
+          if (!found) {
+            const invidiousInstances = [
+              'inv.thepixora.com',
+              'invidious.jing.rocks',
+              'invidious.nerdvpn.de'
+            ];
+            for (const instance of invidiousInstances) {
+              if (found) break;
+              try {
+                const res = await fetchWithTimeout(`https://${instance}/api/v1/search?q=${query}&type=video`, 5000);
+                if (res.ok) {
+                  const data = await res.json();
+                  if (data && data.length > 0 && data[0].videoId) {
+                    finalYoutubeId = data[0].videoId;
+                    songToPlay.youtubeId = finalYoutubeId;
+                    found = true;
+                  }
+                }
+              } catch (_) { /* ignore and try next instance */ }
+            }
+          }
+
+          // 3c. Fallback: allorigins scrape
           if (!found) {
             const proxyUrl = `https://api.allorigins.win/raw?url=https://m.youtube.com/results?search_query=${query}`;
             const res = await fetchWithTimeout(proxyUrl, 8000);
