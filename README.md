@@ -21,7 +21,10 @@ A premium, modern web-based music player built with React.js, featuring a stunni
 ## API Integrations 🔗
 
 This project is powered by several robust APIs working together seamlessly:
-- **YouTube API (via custom middleware):** Handles the core music searching and audio playback stream resolution.
+- **Audio Playback Resolution:** Uses a multi-tiered fallback architecture to find the correct YouTube video ID for any song:
+  1. **Local Cache:** A pre-fetched JSON dictionary of 100+ popular songs for instant, zero-latency playback.
+  2. **YouTube Data API v3:** The primary search engine (requires an API key in `.env`).
+  3. **AllOrigins Proxy Scraper:** A fallback web scraper that bypasses CORS issues if the API key is missing or quota is exceeded.
 - **LRCLib API:** Provides highly accurate, time-synced lyrics (`.lrc` format) for the karaoke-style scrolling experience.
 - **Wikipedia REST API:** Automatically fetches high-quality artist photos and short biographies for the "About the Artist" section.
 
