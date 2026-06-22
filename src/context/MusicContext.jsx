@@ -82,7 +82,8 @@ export const MusicProvider = ({ children }) => {
           disablekb: 1,
           fs: 0,
           rel: 0,
-          modestbranding: 1
+          modestbranding: 1,
+          playsinline: 1
         },
         events: {
           onReady: () => {
@@ -96,7 +97,15 @@ export const MusicProvider = ({ children }) => {
             } else if (event.data === window.YT.PlayerState.PLAYING) {
               setIsPlaying(true);
             } else if (event.data === window.YT.PlayerState.PAUSED) {
-              setIsPlaying(false);
+              // Android Chrome pauses iframe videos when screen is locked.
+              // If it pauses while we are in background, try to aggressively resume.
+              if (document.hidden && isPlaying) {
+                setTimeout(() => {
+                  if (playerRef.current) playerRef.current.playVideo();
+                }, 500);
+              } else {
+                setIsPlaying(false);
+              }
             }
           }
         }
@@ -149,10 +158,10 @@ export const MusicProvider = ({ children }) => {
   }, [isPlaying]);
 
   useEffect(() => {
-    // Silent HTML5 Audio (keeps browser audio session alive on iOS/Android)
-    const audio = new Audio("data:audio/wav;base64,UklGRigAAABXQVZFZm10IBIAAAABAAEARKwAAIhYAQACABAAAABkYXRhAgAAAAEA");
+    // Real 10-second silent MP3 to keep Android/iOS audio session permanently alive
+    const audio = new Audio("/silence.mp3");
     audio.loop = true;
-    audio.volume = 0.001; // near-inaudible
+    audio.volume = 0.01;
     silentAudioRef.current = audio;
 
     // AudioContext oscillator at 0 gain — keeps audio thread awake on Android Chrome
@@ -338,7 +347,8 @@ export const MusicProvider = ({ children }) => {
 
   const playSong = useCallback(
     (song, playlist = null) => {
-      if (!isPlayerReadyRef.current) return;
+      if (!isPlayerReady || !playerRef.current) return;
+      if(silentAudioRef.current) silentAudioRef.current.play().catch(()=>{});
       
       if (playlist) {
         setQueue(playlist);
@@ -349,13 +359,21 @@ export const MusicProvider = ({ children }) => {
         setQueueIndex(0);
       }
       
+      if (currentSongRef.current?.id === song.id) {
+        playerRef.current.seekTo(song.startSeconds || 0);
+        playerRef.current.playVideo();
+        setIsPlaying(true);
+        return;
+      }
+      
       loadAndPlayYoutubeVideo(song);
     },
-    [loadAndPlayYoutubeVideo]
+    [loadAndPlayYoutubeVideo, isPlayerReady]
   );
 
   const togglePlay = useCallback(() => {
     if (!isPlayerReady || !playerRef.current) return;
+    if (silentAudioRef.current && !isPlaying) silentAudioRef.current.play().catch(()=>{});
     
     if (isPlaying) {
       playerRef.current.pauseVideo();
@@ -368,6 +386,7 @@ export const MusicProvider = ({ children }) => {
 
   const handleNext = useCallback(() => {
     if (!isPlayerReady || !playerRef.current) return;
+    if (silentAudioRef.current) silentAudioRef.current.play().catch(()=>{});
 
     if (repeatMode === "one") {
       playerRef.current.seekTo(0);
@@ -400,6 +419,7 @@ export const MusicProvider = ({ children }) => {
 
   const handlePrev = useCallback(() => {
     if (!isPlayerReady || !playerRef.current) return;
+    if (silentAudioRef.current) silentAudioRef.current.play().catch(()=>{});
 
     if (playerRef.current.getCurrentTime() > 3) {
       playerRef.current.seekTo(0);
