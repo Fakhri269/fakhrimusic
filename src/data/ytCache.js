@@ -2,10 +2,10 @@
 // Keys are lowercase normalized "artist title" for fuzzy matching
 export const ytCache = {
   // ── Dewa 19 ──────────────────────────────────────
-  "dewa 19 aku milikmu": "lHC_pKJKKg8",
-  "aku milikmu": "lHC_pKJKKg8",
-  "dewa 19 kangen": "RYGgSRtYxd0",
-  "kangen": "RYGgSRtYxd0",
+  "dewa 19 aku milikmu": "LyH94L1yOTk",
+  "aku milikmu": "LyH94L1yOTk",
+  "dewa 19 kangen": "sjjhLDPT5_g",
+  "kangen": "sjjhLDPT5_g",
   "dewa 19 separuh nafasku": "0vuBZYWZPIc",
   "separuh nafasku": "0vuBZYWZPIc",
   "dewa 19 roman picisan": "JatwGCBZoI0",
