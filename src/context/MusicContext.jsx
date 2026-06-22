@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useRef, useEffect, useCallback } from "react";
 import { songs as initialSongs } from "../data/songs";
+import { findInCache } from "../data/ytCache";
 
 const MusicContext = createContext(null);
 
@@ -130,7 +131,7 @@ export const MusicProvider = ({ children }) => {
     
     let finalYoutubeId = songToPlay.youtubeId;
     if (!finalYoutubeId) {
-      // 1. Fallback: Check if the song exists in our local songs.js
+      // 1. Check local songs.js
       const localMatch = initialSongs.find(
         (s) =>
           s.title.toLowerCase().includes(songToPlay.title.toLowerCase()) ||
@@ -139,8 +140,18 @@ export const MusicProvider = ({ children }) => {
       if (localMatch && localMatch.youtubeId) {
         finalYoutubeId = localMatch.youtubeId;
         songToPlay.youtubeId = finalYoutubeId;
-      } else {
-        // 2. Search YouTube for the video ID
+      }
+
+      // 2. Check ytCache (100+ pre-fetched songs)
+      if (!finalYoutubeId) {
+        const cached = findInCache(songToPlay.artist || '', songToPlay.title || '');
+        if (cached) {
+          finalYoutubeId = cached;
+          songToPlay.youtubeId = finalYoutubeId;
+        }
+      }
+      // 3. Network search as last resort (YouTube API / allorigins)
+      if (!finalYoutubeId) {
         try {
           const query = encodeURIComponent(songToPlay.artist + ' ' + songToPlay.title + ' official audio');
 
