@@ -336,6 +336,52 @@ export const MusicProvider = ({ children }) => {
 
   const isLiked = (id) => likedSongs.includes(id);
 
+  // Sync Media Session API (lockscreen/notification controls)
+  useEffect(() => {
+    if ('mediaSession' in navigator && currentSong) {
+      navigator.mediaSession.metadata = new window.MediaMetadata({
+        title: currentSong.title,
+        artist: currentSong.artist,
+        album: "FakhriMusic",
+        artwork: [
+          { src: currentSong.cover || 'https://cdn-icons-png.flaticon.com/512/3844/3844724.png', sizes: '512x512', type: 'image/png' }
+        ]
+      });
+
+      navigator.mediaSession.setActionHandler('play', () => {
+        if (playerRef.current) playerRef.current.playVideo();
+      });
+      navigator.mediaSession.setActionHandler('pause', () => {
+        if (playerRef.current) playerRef.current.pauseVideo();
+      });
+      navigator.mediaSession.setActionHandler('previoustrack', () => {
+        handlePrev();
+      });
+      navigator.mediaSession.setActionHandler('nexttrack', () => {
+        if (handleNextRef.current) handleNextRef.current();
+      });
+      navigator.mediaSession.setActionHandler('seekto', (details) => {
+        seekTo(details.seekTime);
+      });
+    }
+  }, [currentSong, handlePrev, seekTo]);
+
+  // Sync Playback state and Position to MediaSession
+  useEffect(() => {
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.playbackState = isPlaying ? 'playing' : 'paused';
+      if (duration > 0 && currentTime >= 0) {
+        try {
+          navigator.mediaSession.setPositionState({
+            duration: duration,
+            playbackRate: 1.0,
+            position: currentTime
+          });
+        } catch (e) { /* ignore if out of bounds */ }
+      }
+    }
+  }, [isPlaying, currentTime, duration]);
+
   return (
     <MusicContext.Provider
       value={{
